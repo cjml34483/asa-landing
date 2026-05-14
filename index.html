@@ -685,7 +685,7 @@
                 { name: 'London',   hrs: '07–13 UTC', trades: 5,  pl: '−£18.90',  col: '#b91c1c' },
                 { name: 'New York', hrs: '13–21 UTC', trades: 33, pl: '+£49.27',  col: '#2d8f33' },
               ].map((s) => (
-                <div key={s.name} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px' }}>
+                <div key={s.name} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', minWidth: 80 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <span style={{ fontSize: 11, fontWeight: 800, color: '#111827', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{s.name}</span>
                     <span className="tnum" style={{ fontSize: 9, color: '#6b7280' }}>{s.hrs}</span>
@@ -885,7 +885,7 @@
               className="md:hidden"
             >
               <div className="h-16 px-5 flex items-center justify-between" style={{borderBottom:'1px solid #E5E7EB'}}>
-                <AsaWordmark className="h-8 w-auto" />
+                <AsaWordmark className="h-8 w-auto" style={{filter: 'brightness(0)'}} />
                 <button className="-mr-2 p-3 min-w-[44px] min-h-[44px] inline-flex items-center justify-center" style={{color:'#111827'}} aria-label="Close menu" onClick={close}>
                   <CloseIcon />
                 </button>
