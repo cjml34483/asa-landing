@@ -168,6 +168,12 @@
       .th-metrics > div:nth-child(6) { border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 2px; }
     }
 
+    /* Session Distribution card rows — stacked on mobile (cells are only ~92px wide), side-by-side with space-between on desktop. */
+    .sd-cell-row { display: flex; flex-direction: column; align-items: flex-start; }
+    @media (min-width: 640px) {
+      .sd-cell-row { flex-direction: row; justify-content: space-between; align-items: baseline; }
+    }
+
     /* Interactive table rows */
     tbody tr { transition: background 130ms ease; }
     tbody tr:not(.no-hover):hover { background: rgba(55,170,53,0.04); }
@@ -686,13 +692,13 @@
                 { name: 'New York', hrs: '13–21 UTC', trades: 33, pl: '+£49.27',  col: '#2d8f33' },
               ].map((s) => (
                 <div key={s.name} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', minWidth: 80 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <div className="sd-cell-row">
                     <span style={{ fontSize: 11, fontWeight: 800, color: '#111827', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{s.name}</span>
                     <span className="tnum" style={{ fontSize: 9, color: '#6b7280', whiteSpace: 'nowrap' }}>{s.hrs}</span>
                   </div>
-                  <div className="tnum" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 6 }}>
-                    <span style={{ fontSize: 10, color: '#6b7280' }}><span style={{ fontWeight: 700, color: '#111827' }}>{s.trades}</span> trades</span>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: s.col }}>{s.pl}</span>
+                  <div className="tnum sd-cell-row" style={{ marginTop: 6 }}>
+                    <span style={{ fontSize: 10, color: '#6b7280', whiteSpace: 'nowrap' }}><span style={{ fontWeight: 700, color: '#111827' }}>{s.trades}</span> trades</span>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: s.col, whiteSpace: 'nowrap' }}>{s.pl}</span>
                   </div>
                 </div>
               ))}
