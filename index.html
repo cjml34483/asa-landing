@@ -151,6 +151,23 @@
     .ty-check-circle { animation: checkScale 380ms cubic-bezier(.2,.0,.0,1) forwards; }
     .ty-check-path   { stroke-dasharray: 60; stroke-dashoffset: 60; animation: checkStroke 480ms 220ms cubic-bezier(.2,.0,.0,1) forwards; }
 
+    /* Trade History metrics — 3 cols on mobile, 6 on desktop */
+    .th-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; padding: 14px 18px; border-bottom: 1px solid #e5e7eb; }
+    @media (min-width: 640px) { .th-metrics { grid-template-columns: repeat(6, minmax(80px, 1fr)); } }
+    /* Divider borders: right border on cols 1,2 in mobile 3-col; all but last in desktop */
+    .th-metrics > div { border-right: 1px solid #e5e7eb; padding: 0 10px; }
+    .th-metrics > div:first-child { padding-left: 0; }
+    .th-metrics > div:last-child { border-right: none; }
+    /* On mobile, remove right border from col 3 (last in row 1) and col 6 (last in row 2) */
+    @media (max-width: 639px) {
+      .th-metrics > div:nth-child(3) { border-right: none; padding-right: 0; }
+      .th-metrics > div:nth-child(4) { padding-left: 0; }
+      /* Add top border to second row */
+      .th-metrics > div:nth-child(4),
+      .th-metrics > div:nth-child(5),
+      .th-metrics > div:nth-child(6) { border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 2px; }
+    }
+
     /* Interactive table rows */
     tbody tr { transition: background 130ms ease; }
     tbody tr:not(.no-hover):hover { background: rgba(55,170,53,0.04); }
@@ -534,45 +551,41 @@
             <span style={{ fontSize: 11, color: '#374151', border: '1px solid #e5e7eb', borderRadius: 6, padding: '3px 9px', background: '#fff' }}>All trades ▾</span>
           </div>
 
-          {/* Top metrics strip — min 80px per col so values don't overlap on mobile */}
-          <div style={{ overflowX: 'auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(80px,1fr))', gap: 0, padding: '14px 18px', borderBottom: '1px solid #e5e7eb', minWidth: 480 }}>
-            <div style={{ borderRight: '1px solid #e5e7eb', paddingRight: 12 }}>
+          {/* Top metrics strip — 3 cols on mobile, 6 on desktop via .th-metrics CSS class */}
+          <div className="th-metrics">
+            <div>
               {cellLabel('Net P&L')}
               <div className="tnum" style={{ fontSize: 22, fontWeight: 800, color: '#2d8f33', marginTop: 4, letterSpacing: '-0.02em' }}>+£232.77</div>
-              <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 3, display: 'flex', gap: 6 }}>
+              <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>
                 <span style={{ color: '#2d8f33', fontWeight: 700 }}>Today +£190.03</span>
-                <span>7d +£232.77</span>
-                <span>30d +£232.77</span>
               </div>
             </div>
-            <div style={{ borderRight: '1px solid #e5e7eb', padding: '0 12px' }}>
+            <div>
               {cellLabel('Trades')}
               <div className="tnum" style={{ fontSize: 22, fontWeight: 800, color: '#111827', marginTop: 4 }}>46</div>
-              <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>23W · 23L · 23.0/day</div>
+              <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>23W · 23L</div>
             </div>
-            <div style={{ borderRight: '1px solid #e5e7eb', padding: '0 12px' }}>
+            <div>
               {cellLabel('Win Rate')}
               <div className="tnum" style={{ fontSize: 22, fontWeight: 800, color: '#111827', marginTop: 4 }}>50%</div>
               <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>streak 8W / 5L</div>
             </div>
-            <div style={{ borderRight: '1px solid #e5e7eb', padding: '0 12px' }}>
+            <div>
               {cellLabel('Best')}
               <div className="tnum" style={{ fontSize: 18, fontWeight: 800, color: '#2d8f33', marginTop: 4 }}>+£74.94</div>
               <div style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>XAUUSD · MANUAL</div>
             </div>
-            <div style={{ borderRight: '1px solid #e5e7eb', padding: '0 12px' }}>
+            <div>
               {cellLabel('Worst')}
               <div className="tnum" style={{ fontSize: 18, fontWeight: 800, color: '#b91c1c', marginTop: 4 }}>−£39.35</div>
-              <div style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>XAUUSD · TT Trades Premium</div>
+              <div style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>TT Trades Premium</div>
             </div>
-            <div style={{ paddingLeft: 12 }}>
+            <div>
               {cellLabel('Profit Factor')}
               <div className="tnum" style={{ fontSize: 22, fontWeight: 800, color: '#111827', marginTop: 4 }}>1.84</div>
               <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>recovery 2.28 · DD −£101.87</div>
             </div>
           </div>
-          </div>{/* end overflow-x-auto wrapper */}
 
           {/* Signal vs Manual bar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 18px', borderBottom: '1px solid #e5e7eb', fontSize: 10 }}>
@@ -864,16 +877,16 @@
                 left: 0,
                 right: 0,
                 bottom: 0,
-                backgroundColor: '#111827',
+                backgroundColor: '#FAFAF8',
                 zIndex: 50,
                 display: 'flex',
                 flexDirection: 'column'
               }}
               className="md:hidden"
             >
-              <div className="h-16 px-5 flex items-center justify-between" style={{borderBottom:'1px solid rgba(255,255,255,0.12)'}}>
-                <AsaWordmark className="h-8 w-auto" style={{ filter: 'brightness(0) invert(1)' }} />
-                <button className="-mr-2 p-3 min-w-[44px] min-h-[44px] inline-flex items-center justify-center" style={{color:'#ffffff'}} aria-label="Close menu" onClick={close}>
+              <div className="h-16 px-5 flex items-center justify-between" style={{borderBottom:'1px solid #E5E7EB'}}>
+                <AsaWordmark className="h-8 w-auto" />
+                <button className="-mr-2 p-3 min-w-[44px] min-h-[44px] inline-flex items-center justify-center" style={{color:'#111827'}} aria-label="Close menu" onClick={close}>
                   <CloseIcon />
                 </button>
               </div>
@@ -884,13 +897,13 @@
                     href={l.href}
                     onClick={close}
                     className="text-2xl font-semibold py-3 last:border-b-0"
-                    style={{color:'#ffffff', borderBottom:'1px solid rgba(255,255,255,0.12)'}}
+                    style={{color:'#111827', borderBottom:'1px solid #E5E7EB'}}
                   >
                     {l.label}
                   </a>
                 ))}
                 <div className="mt-auto flex flex-col gap-3 pt-10">
-                  <a href="/login" onClick={close} className="text-center font-semibold py-3 rounded-md" style={{border:'1px solid rgba(255,255,255,0.2)', color:'#ffffff'}}>Log in</a>
+                  <a href="/login" onClick={close} className="text-center font-semibold py-3 rounded-md" style={{border:'1px solid #111827', color:'#111827'}}>Log in</a>
                   <a href={DEFAULT_CHECKOUT_URL} onClick={close} className="text-center bg-accent text-bg font-semibold py-3 rounded-md">
                     Start My Free Trial
                   </a>
