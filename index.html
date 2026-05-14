@@ -1469,14 +1469,14 @@
               <h2 className="mt-2 h2-fluid font-bold text-primary">Built for traders who measure.</h2>
               <p className="mt-4 md:mt-6 text-base md:text-lg text-primary/80 max-w-2xl">Six things you won’t get from a generic copier — and the reason you’d switch.</p>
             </div>
-            <div className="mt-10 md:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="mt-10 md:mt-16 grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {features.map(({ icon: I, name, desc }) => (
-                <div key={name} className="feature-card border border-border bg-surface rounded-xl p-6 md:p-7 flex flex-col">
-                  <div className="w-11 h-11 rounded-md border border-accent/30 bg-accent/10 flex items-center justify-center text-accent">
+                <div key={name} className="feature-card border border-border bg-surface rounded-xl p-4 md:p-7 flex flex-col">
+                  <div className="w-9 h-9 md:w-11 md:h-11 rounded-md border border-accent/30 bg-accent/10 flex items-center justify-center text-accent">
                     <I />
                   </div>
-                  <h3 className="mt-6 text-lg font-bold text-primary">{name}</h3>
-                  <p className="mt-2 text-sm text-primary/75 leading-relaxed">{desc}</p>
+                  <h3 className="mt-3 md:mt-6 text-sm md:text-lg font-bold text-primary leading-snug">{name}</h3>
+                  <p className="mt-1.5 md:mt-2 text-xs md:text-sm text-primary/75 leading-relaxed">{desc}</p>
                 </div>
               ))}
             </div>
@@ -1921,13 +1921,13 @@
               </button>
             </div>
 
-            <div className="mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-4">
+            <div className="mt-10 md:mt-12 flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0 no-scrollbar">
               {tiers.map((t) => {
                 const price = annual ? Math.round(t.annual / 12) : t.monthly;
                 return (
                   <div
                     key={t.name}
-                    className={`rounded-xl p-6 md:p-8 flex flex-col relative ${
+                    className={`rounded-xl p-6 md:p-8 flex flex-col relative flex-shrink-0 w-[85vw] snap-center md:w-auto md:flex-shrink ${
                       t.name === 'Starter'
                         ? 'bg-gradient-to-br from-white to-zinc-50 border border-zinc-200 hover:-translate-y-1 transition-transform duration-200'
                         : t.name === 'Pro'
@@ -1972,6 +1972,7 @@
                 );
               })}
             </div>
+            <p className="text-center text-xs text-muted mt-2 md:hidden">Swipe to compare plans</p>
 
             <p className="mt-10 text-center text-sm text-muted">
               All plans include a 14-day free trial. Cancel anytime through Stripe Customer Portal.
