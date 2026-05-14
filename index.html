@@ -1133,12 +1133,12 @@
               {/* Right: bar chart hero + stat cards stacked below */}
               <div>
                 <p className="text-xs font-bold tracking-[0.18em] uppercase text-muted mb-3">Your Leaderboard</p>
-                <div className="border border-border bg-surface rounded-xl p-5 md:p-7">
-                  <div className="flex flex-col gap-3.5">
+                <div className="border border-border bg-surface rounded-xl p-4 md:p-7">
+                  <div className="flex flex-col gap-2.5 md:gap-3.5">
                     {bars.map((b) => (
-                      <div key={b.name} className="flex items-center gap-3">
+                      <div key={b.name} className="flex items-center gap-2.5 md:gap-3">
                         <span className="text-xs font-semibold text-primary/70 w-[72px] sm:w-[88px] shrink-0">{b.name}</span>
-                        <div className="flex-1 h-3 bg-surface-2 rounded-full overflow-hidden">
+                        <div className="flex-1 h-2.5 md:h-3 bg-surface-2 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${b.good ? 'bg-accent' : 'bg-warn/35'}`}
                             style={{ width: `${b.w}%` }}
@@ -1194,27 +1194,27 @@
               <h2 className="mt-2 h2-fluid font-bold text-primary">Two ways to follow signals. One of them you can <SI>measure.</SI></h2>
             </div>
             <div className="grid lg:grid-cols-2 gap-5 md:gap-6">
-              <div className="border border-warn/20 bg-warn/[0.04] rounded-xl p-6 md:p-10">
+              <div className="border border-warn/20 bg-warn/[0.04] rounded-xl p-5 md:p-10">
                 <p className="text-xs font-semibold text-warn tracking-widest uppercase">The old way</p>
                 <h3 className="mt-3 text-2xl md:text-3xl font-bold text-primary">The old way of following signals</h3>
-                <ul className="mt-8 space-y-5">
+                <ul className="mt-5 md:mt-8 space-y-3 md:space-y-5">
                   {oldWay.map((t, i) => (
-                    <li key={i} className="flex gap-4 border-l-2 border-warn/60 pl-4">
+                    <li key={i} className="flex gap-3 md:gap-4 border-l-2 border-warn/60 pl-3 md:pl-4">
                       <XIcon className="w-5 h-5 mt-0.5 text-warn shrink-0" />
-                      <span className="text-primary/85 leading-relaxed">{t}</span>
+                      <span className="text-sm md:text-base text-primary/85 leading-relaxed">{t}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="border border-accent/30 bg-accent/[0.04] rounded-xl p-6 md:p-10">
+              <div className="border border-accent/30 bg-accent/[0.04] rounded-xl p-5 md:p-10">
                 <p className="text-xs font-semibold text-accent tracking-widest uppercase">With ASA Systems</p>
                 <h3 className="mt-3 text-2xl md:text-3xl font-bold text-primary">With ASA Systems</h3>
-                <ul className="mt-8 space-y-5">
+                <ul className="mt-5 md:mt-8 space-y-3 md:space-y-5">
                   {newWay.map((t, i) => (
-                    <li key={i} className="flex gap-4 border-l-2 border-accent pl-4">
+                    <li key={i} className="flex gap-3 md:gap-4 border-l-2 border-accent pl-3 md:pl-4">
                       <CheckIcon className="w-5 h-5 mt-0.5 text-accent shrink-0" />
-                      <span className="text-primary/90 leading-relaxed">{t}</span>
+                      <span className="text-sm md:text-base text-primary/90 leading-relaxed">{t}</span>
                     </li>
                   ))}
                 </ul>
@@ -1262,15 +1262,15 @@
                 If you copy trades from Telegram or Discord, <SI>you already know this pain.</SI>
               </h2>
             </div>
-            <div className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+            <div className="mt-8 md:mt-14 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5">
               {pains.map(({ icon: I, title, body }) => (
-                <div key={title} className="feature-card relative border border-border bg-surface rounded-xl p-6 md:p-7 flex flex-col">
+                <div key={title} className="feature-card relative border border-border bg-surface rounded-xl p-4 md:p-7 flex flex-col">
                   <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(220,38,38,0.5), transparent)' }}></div>
-                  <div className="w-11 h-11 rounded-md flex items-center justify-center" style={{ border: '1px solid rgba(220,38,38,0.3)', backgroundColor: 'rgba(220,38,38,0.1)', color: 'var(--warn, #dc2626)' }}>
+                  <div className="w-9 h-9 md:w-11 md:h-11 rounded-md flex items-center justify-center" style={{ border: '1px solid rgba(220,38,38,0.3)', backgroundColor: 'rgba(220,38,38,0.1)', color: 'var(--warn, #dc2626)' }}>
                     <I />
                   </div>
-                  <h3 className="mt-6 text-lg font-bold text-primary leading-snug">{title}</h3>
-                  <p className="mt-3 text-sm text-primary/75 leading-relaxed">{body}</p>
+                  <h3 className="mt-3 md:mt-6 text-base md:text-lg font-bold text-primary leading-snug">{title}</h3>
+                  <p className="mt-2 md:mt-3 text-sm text-primary/75 leading-relaxed">{body}</p>
                 </div>
               ))}
             </div>
@@ -1303,18 +1303,18 @@
                 <p className="mt-6 text-lg text-primary/80 max-w-xl leading-relaxed">
                   ASA Terminal ships with <span className="text-primary font-semibold">13 pre-loaded prop firm rule sets</span> — FTMO, The5ers, FundedNext, MyForexFunds, and nine more.
                 </p>
-                <ul className="mt-7 space-y-4 max-w-xl">
+                <ul className="mt-5 md:mt-7 space-y-3 md:space-y-4 max-w-xl">
                   <li className="flex gap-3">
                     <CheckIcon className="w-5 h-5 mt-0.5 text-accent shrink-0" />
-                    <span className="text-primary/85 leading-relaxed">Every trade is checked against your firm's drawdown limits, position size caps, and trading hour restrictions <span className="text-primary font-semibold">before execution</span>.</span>
+                    <span className="text-sm md:text-base text-primary/85 leading-relaxed">Every trade is checked against your firm's drawdown limits, position size caps, and trading hour restrictions <span className="text-primary font-semibold">before execution</span>.</span>
                   </li>
                   <li className="flex gap-3">
                     <CheckIcon className="w-5 h-5 mt-0.5 text-accent shrink-0" />
-                    <span className="text-primary/85 leading-relaxed">Never lose a prop account to a signal channel that doesn't follow the rules.</span>
+                    <span className="text-sm md:text-base text-primary/85 leading-relaxed">Never lose a prop account to a signal channel that doesn't follow the rules.</span>
                   </li>
                   <li className="flex gap-3">
                     <CheckIcon className="w-5 h-5 mt-0.5 text-accent shrink-0" />
-                    <span className="text-primary/85 leading-relaxed">Stealth mode hides automation signatures from broker detection — your prop firm sees a clean account.</span>
+                    <span className="text-sm md:text-base text-primary/85 leading-relaxed">Stealth mode hides automation signatures from broker detection — your prop firm sees a clean account.</span>
                   </li>
                 </ul>
                 <div className="mt-9 flex flex-col sm:flex-row gap-3">
@@ -1383,11 +1383,11 @@
             </div>
 
             {/* Steps 01 + 02 — compact side-by-side setup cards */}
-            <div className="mt-10 md:mt-16 grid md:grid-cols-2 gap-6 md:gap-4">
+            <div className="mt-8 md:mt-16 grid md:grid-cols-2 gap-4 md:gap-4">
               {setupSteps.map((s) => (
                 <div
                   key={s.n}
-                  className="reveal border border-border bg-surface rounded-xl p-6 md:p-9 flex flex-col"
+                  className="reveal border border-border bg-surface rounded-xl p-4 md:p-9 flex flex-col"
                 >
                   <div className="flex items-center gap-3">
                     <span className="inline-flex items-center justify-center rounded-full border border-accent text-accent text-xs font-bold px-3 py-0.5">
@@ -1397,9 +1397,9 @@
                       {s.badge}
                     </span>
                   </div>
-                  <h3 className="mt-6 text-2xl md:text-[28px] font-bold text-primary">{s.title}</h3>
-                  <p className="mt-3 text-primary/80 leading-relaxed">{s.desc}</p>
-                  <ul className="mt-6 space-y-2.5">
+                  <h3 className="mt-4 md:mt-6 text-xl md:text-[28px] font-bold text-primary">{s.title}</h3>
+                  <p className="mt-2 md:mt-3 text-sm md:text-base text-primary/80 leading-relaxed">{s.desc}</p>
+                  <ul className="mt-4 md:mt-6 space-y-2 md:space-y-2.5">
                     {s.highlights.map((h) => (
                       <li key={h} className="flex items-start gap-3 text-sm text-primary/85">
                         <CheckIcon className="w-4 h-4 mt-0.5 text-accent shrink-0" />
@@ -1882,6 +1882,30 @@
       const openQuiz = useOpenQuiz();
       const openWaitlist = useOpenWaitlist();
       const [annual, setAnnual] = useState(false);
+      const carouselRef = useRef(null);
+      const [activeIdx, setActiveIdx] = useState(0);
+      useEffect(() => {
+        const el = carouselRef.current;
+        if (!el) return;
+        const handle = () => {
+          const card = el.querySelector('[data-pricing-card]');
+          if (!card) return;
+          const step = card.offsetWidth + 16; // card + gap-4
+          const idx = Math.round(el.scrollLeft / step);
+          setActiveIdx(Math.max(0, Math.min(2, idx)));
+        };
+        el.addEventListener('scroll', handle, { passive: true });
+        handle();
+        return () => el.removeEventListener('scroll', handle);
+      }, []);
+      const scrollToCard = (idx) => {
+        const el = carouselRef.current;
+        if (!el) return;
+        const card = el.querySelector('[data-pricing-card]');
+        if (!card) return;
+        const step = card.offsetWidth + 16;
+        el.scrollTo({ left: idx * step, behavior: 'smooth' });
+      };
       const tiers = [
         { name: "Starter", monthly: 19, annual: 171, features: ["1 MT5 account", "3 signal providers", "All core features"], highlight: false, badge: null },
         { name: "Pro",     monthly: 35, annual: 315, features: ["3 MT5 accounts", "Unlimited providers", "AI parsing", "Stealth mode"], highlight: true,  badge: "Most popular" },
@@ -1921,22 +1945,23 @@
               </button>
             </div>
 
-            <div className="mt-10 md:mt-12 flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0 no-scrollbar">
+            <div ref={carouselRef} className="mt-10 md:mt-12 flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0 no-scrollbar">
               {tiers.map((t) => {
                 const price = annual ? Math.round(t.annual / 12) : t.monthly;
                 return (
                   <div
                     key={t.name}
+                    data-pricing-card
                     className={`rounded-xl p-6 md:p-8 flex flex-col relative flex-shrink-0 w-[85vw] snap-center md:w-auto md:flex-shrink ${
                       t.name === 'Starter'
                         ? 'bg-gradient-to-br from-white to-zinc-50 border border-zinc-200 hover:-translate-y-1 transition-transform duration-200'
                         : t.name === 'Pro'
-                          ? 'bg-gradient-to-br from-white via-accent/5 to-accent/12 border border-accent/30 md:scale-[1.04] shadow-[0_0_40px_rgba(55,170,53,0.15)]'
-                          : 'bg-gradient-to-br from-white via-accent/8 to-accent/20 border border-accent/40 shadow-[0_0_50px_rgba(55,170,53,0.2)]'
+                          ? 'bg-gradient-to-br from-white via-accent/5 to-accent/12 border border-accent/30 md:scale-[1.04] md:shadow-[0_0_40px_rgba(55,170,53,0.15)]'
+                          : 'bg-gradient-to-br from-white via-accent/8 to-accent/20 border border-accent/40 md:shadow-[0_0_50px_rgba(55,170,53,0.2)]'
                     }`}
                   >
                     {t.badge && (
-                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-bg text-xs font-bold px-3 py-1 rounded-full">
+                      <span className="relative self-center mb-3 md:mb-0 md:absolute md:-top-3 md:left-1/2 md:-translate-x-1/2 bg-accent text-bg text-xs font-bold px-3 py-1 rounded-full">
                         {t.badge}
                       </span>
                     )}
@@ -1972,7 +1997,34 @@
                 );
               })}
             </div>
-            <p className="text-center text-xs text-muted mt-2 md:hidden">Swipe to compare plans</p>
+            <div className="flex items-center justify-center gap-4 mt-3 md:hidden">
+              <button
+                onClick={() => scrollToCard(activeIdx - 1)}
+                disabled={activeIdx === 0}
+                aria-label="Previous plan"
+                className={`p-2 -m-2 transition ${activeIdx === 0 ? 'text-zinc-300 cursor-default' : 'text-primary/70 hover:text-primary'}`}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <div className="flex gap-2">
+                {[0, 1, 2].map((i) => (
+                  <button
+                    key={i}
+                    onClick={() => scrollToCard(i)}
+                    aria-label={`Go to plan ${i + 1}`}
+                    className={`w-2 h-2 rounded-full transition-colors ${activeIdx === i ? 'bg-accent' : 'bg-zinc-300'}`}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={() => scrollToCard(activeIdx + 1)}
+                disabled={activeIdx === 2}
+                aria-label="Next plan"
+                className={`p-2 -m-2 transition ${activeIdx === 2 ? 'text-zinc-300 cursor-default' : 'text-primary/70 hover:text-primary'}`}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
 
             <p className="mt-10 text-center text-sm text-muted">
               All plans include a 14-day free trial. Cancel anytime through Stripe Customer Portal.
