@@ -168,12 +168,6 @@
       .th-metrics > div:nth-child(6) { border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 2px; }
     }
 
-    /* Session Distribution cell header — stacked on mobile (NEW YORK + 13–21 UTC don't fit horizontally in 92px cells), side-by-side on desktop. */
-    .sd-cell-header { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
-    @media (min-width: 640px) {
-      .sd-cell-header { flex-direction: row; justify-content: space-between; align-items: baseline; gap: 6px; }
-    }
-
     /* Interactive table rows */
     tbody tr { transition: background 130ms ease; }
     tbody tr:not(.no-hover):hover { background: rgba(55,170,53,0.04); }
@@ -692,8 +686,8 @@
                 { name: 'New York', hrs: '13–21 UTC', trades: 33, pl: '+£49.27',  col: '#2d8f33' },
               ].map((s) => (
                 <div key={s.name} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', minWidth: 80 }}>
-                  <div className="sd-cell-header">
-                    <span style={{ fontSize: 11, fontWeight: 800, color: '#111827', letterSpacing: '0.04em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{s.name}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#111827', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{s.name}</span>
                     <span className="tnum" style={{ fontSize: 9, color: '#6b7280', whiteSpace: 'nowrap' }}>{s.hrs}</span>
                   </div>
                   <div className="tnum" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 6 }}>
