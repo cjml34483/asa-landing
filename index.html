@@ -820,7 +820,7 @@
 
       return (
         <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-border">
-          <nav className="max-w-screen-2xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+          <nav className="max-w-screen-2xl mx-auto px-5 md:px-10 h-16 flex items-center justify-between">
             <a href="#top" className="flex items-center" aria-label="ASA Systems home">
               <AsaWordmark className="h-7 sm:h-8 w-auto" style={{ filter: 'invert(1) hue-rotate(180deg)' }} />
             </a>
@@ -854,19 +854,19 @@
 
           {open && (
             <div className="fixed inset-0 z-50 bg-bg md:hidden flex flex-col">
-              <div className="h-16 px-6 flex items-center justify-between border-b border-border">
+              <div className="h-16 px-5 flex items-center justify-between border-b border-border">
                 <AsaWordmark className="h-8 w-auto" style={{ filter: 'invert(1) hue-rotate(180deg)' }} />
                 <button className="-mr-2 p-3 min-w-[44px] min-h-[44px] text-primary inline-flex items-center justify-center" aria-label="Close menu" onClick={close}>
                   <CloseIcon />
                 </button>
               </div>
-              <div className="flex-1 px-6 py-10 flex flex-col gap-6">
+              <div className="flex-1 px-5 py-8 flex flex-col">
                 {links.map(l => (
                   <a
                     key={l.href}
                     href={l.href}
                     onClick={close}
-                    className="text-2xl font-semibold text-primary"
+                    className="text-2xl font-semibold text-primary py-3 border-b border-border/60 last:border-b-0"
                   >
                     {l.label}
                   </a>
@@ -897,11 +897,11 @@
       const openQuiz = useOpenQuiz();
       return (
         <section id="top" className="border-b border-border md:flex md:items-center md:min-h-[calc(100vh-64px)] overflow-hidden">
-          <div className="w-full max-w-full mx-auto px-12 md:px-16 pt-6 md:pt-7 pb-6 md:pb-7">
-            <div className="grid md:grid-cols-[1fr_1.05fr] gap-[40px] lg:gap-[56px] items-center">
+          <div className="w-full max-w-full mx-auto px-5 md:px-16 pt-10 md:pt-7 pb-12 md:pb-7">
+            <div className="grid md:grid-cols-[1fr_1.05fr] gap-10 md:gap-[40px] lg:gap-[56px] items-center">
 
               {/* Left — copy + CTAs */}
-              <div className="w-full relative">
+              <div className="w-full relative text-center md:text-left">
                 {/* Hand-drawn annotation pointing back at the H1.
                     Lives inside the left col so it tracks the H1's vertical
                     position (items-center centers both cols together). */}
@@ -946,23 +946,23 @@
                   Stop guessing which signals work.
                 </p>
 
-                <div className="mt-5 flex flex-col sm:flex-row gap-3">
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
                   <a
                     href={DEFAULT_CHECKOUT_URL}
-                    className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-bold px-7 py-3 rounded-xl transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]"
+                    className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-bold px-7 py-3.5 rounded-xl transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto"
                   >
                     Start My Free Trial
                     <ArrowRightIcon className="w-4 h-4" />
                   </a>
                   <a
                     href="#how-it-works"
-                    className="inline-flex items-center justify-center gap-2 border border-border hover:border-primary/40 text-primary font-semibold px-6 py-3 rounded-md transition-colors"
+                    className="inline-flex items-center justify-center gap-2 border border-border hover:border-primary/40 text-primary font-semibold px-6 py-3.5 rounded-md transition-colors w-full sm:w-auto"
                   >
                     See it in action →
                   </a>
                 </div>
 
-                <p className="mt-3 text-xs text-muted/80">
+                <p className="mt-4 text-xs text-muted/80">
                   No card required · Any MT5 broker · 5-minute setup · 14-day trial
                 </p>
                 <p className="mt-1.5 text-xs text-muted/70">
@@ -970,8 +970,8 @@
                 </p>
 
                 {/* Social proof strip */}
-                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-primary/65">
-                  <span className="inline-flex items-center gap-1.5">
+                <div className="mt-6 grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center justify-items-center sm:justify-start gap-x-5 gap-y-2.5 text-xs text-primary/65">
+                  <span className="inline-flex items-center gap-1.5 col-span-2 sm:col-auto">
                     <span className="text-accent" aria-hidden="true">★★★★★</span>
                     <span className="font-semibold text-primary">Built for serious traders</span>
                   </span>
@@ -980,7 +980,7 @@
                   <span className="text-border hidden sm:inline">|</span>
                   <span><span className="text-accent font-bold">Pre-checked</span> prop-firm rules</span>
                   <span className="text-border hidden sm:inline">|</span>
-                  <span><span className="text-accent font-bold tabular-nums">90-day</span> back-attribution</span>
+                  <span className="col-span-2 sm:col-auto"><span className="text-accent font-bold tabular-nums">90-day</span> back-attribution</span>
                 </div>
               </div>
 
@@ -1038,10 +1038,10 @@
       ];
       return (
         <section className="border-b border-border bg-surface">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border rounded-xl overflow-hidden">
               {stats.map((s) => (
-                <div key={s.unit} className="bg-surface p-5 sm:p-8 lg:p-10 min-w-0">
+                <div key={s.unit} className="bg-surface p-4 sm:p-8 lg:p-10 min-w-0">
                   <div className="font-bold tracking-tight leading-[1.05] break-words tabular-nums" style={{ fontSize: 'clamp(1.5rem, 2.6vw, 2.5rem)' }}>
                     {s.num ? <><span className="text-accent"><CountUp end={s.num} suffix={s.numSuffix} /></span>{' '}</> : null}
                     <span className="text-primary">{s.unit}</span>
@@ -1067,7 +1067,7 @@
     const EveryFillTagged = () => {
       return (
         <section className="border-b border-border bg-surface-2">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
             <div className="max-w-3xl">
               <h2 className="h2-fluid font-bold text-primary tracking-tighter2">
                 Every fill <SI>tagged</SI> to its source.
@@ -1108,7 +1108,7 @@
       ];
       return (
         <section className="reveal border-b border-border">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-16 md:py-20">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-20">
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
               {/* Left: editorial */}
               <div>
@@ -1124,7 +1124,7 @@
                 </p>
                 <button
                   onClick={() => openWaitlist("Pro")}
-                  className="mt-7 inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-bg font-bold px-7 py-3.5 rounded-md transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]"
+                  className="mt-7 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-bold px-7 py-3.5 rounded-md transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto"
                 >
                   See your own leaderboard. Start My Free Trial
                   <ArrowRightIcon className="w-4 h-4" />
@@ -1133,11 +1133,11 @@
               {/* Right: bar chart hero + stat cards stacked below */}
               <div>
                 <p className="text-xs font-bold tracking-[0.18em] uppercase text-muted mb-3">Your Leaderboard</p>
-                <div className="border border-border bg-surface rounded-xl p-6 md:p-7">
+                <div className="border border-border bg-surface rounded-xl p-5 md:p-7">
                   <div className="flex flex-col gap-3.5">
                     {bars.map((b) => (
                       <div key={b.name} className="flex items-center gap-3">
-                        <span className="text-xs font-semibold text-primary/70 w-[88px] shrink-0">{b.name}</span>
+                        <span className="text-xs font-semibold text-primary/70 w-[72px] sm:w-[88px] shrink-0">{b.name}</span>
                         <div className="flex-1 h-3 bg-surface-2 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${b.good ? 'bg-accent' : 'bg-warn/35'}`}
@@ -1155,7 +1155,7 @@
                     { label: "Losing channels", val: "−11.0R", color: "text-warn" },
                     { label: "Net gain on 90 days", val: "+11.6R", color: "text-primary" },
                   ].map(({ label, val, color }) => (
-                    <div key={label} className="border border-border bg-surface rounded-xl px-5 py-3.5 flex items-center justify-between">
+                    <div key={label} className="border border-border bg-surface rounded-xl px-4 md:px-5 py-3.5 flex items-center justify-between">
                       <span className="text-sm text-muted">{label}</span>
                       <span className={`text-lg font-bold tabular-nums ${color}`}>{val}</span>
                     </div>
@@ -1188,13 +1188,13 @@
       ];
       return (
         <section className="border-b border-border">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
-            <div className="max-w-3xl mb-14">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
+            <div className="max-w-3xl mb-10 md:mb-14">
               <p className="text-xs font-semibold text-muted tracking-widest uppercase">The contrast</p>
               <h2 className="mt-2 h2-fluid font-bold text-primary">Two ways to follow signals. One of them you can <SI>measure.</SI></h2>
             </div>
-            <div className="grid lg:grid-cols-2 gap-6">
-              <div className="border border-warn/20 bg-warn/[0.04] rounded-xl p-8 md:p-10">
+            <div className="grid lg:grid-cols-2 gap-5 md:gap-6">
+              <div className="border border-warn/20 bg-warn/[0.04] rounded-xl p-6 md:p-10">
                 <p className="text-xs font-semibold text-warn tracking-widest uppercase">The old way</p>
                 <h3 className="mt-3 text-2xl md:text-3xl font-bold text-primary">The old way of following signals</h3>
                 <ul className="mt-8 space-y-5">
@@ -1207,7 +1207,7 @@
                 </ul>
               </div>
 
-              <div className="border border-accent/30 bg-accent/[0.04] rounded-xl p-8 md:p-10">
+              <div className="border border-accent/30 bg-accent/[0.04] rounded-xl p-6 md:p-10">
                 <p className="text-xs font-semibold text-accent tracking-widest uppercase">With ASA Systems</p>
                 <h3 className="mt-3 text-2xl md:text-3xl font-bold text-primary">With ASA Systems</h3>
                 <ul className="mt-8 space-y-5">
@@ -1255,16 +1255,16 @@
       ];
       return (
         <section className="reveal border-b border-border bg-pain">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
             <div className="max-w-3xl">
               <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'var(--warn, #dc2626)' }}>The signal copier problem</p>
               <h2 className="mt-2 h2-fluid font-bold text-primary tracking-tighter2">
                 If you copy trades from Telegram or Discord, <SI>you already know this pain.</SI>
               </h2>
             </div>
-            <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
               {pains.map(({ icon: I, title, body }) => (
-                <div key={title} className="feature-card relative border border-border bg-surface rounded-xl p-7 flex flex-col">
+                <div key={title} className="feature-card relative border border-border bg-surface rounded-xl p-6 md:p-7 flex flex-col">
                   <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(220,38,38,0.5), transparent)' }}></div>
                   <div className="w-11 h-11 rounded-md flex items-center justify-center" style={{ border: '1px solid rgba(220,38,38,0.3)', backgroundColor: 'rgba(220,38,38,0.1)', color: 'var(--warn, #dc2626)' }}>
                     <I />
@@ -1293,8 +1293,8 @@
       ];
       return (
         <section className="reveal border-b border-border bg-prop">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
-            <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
+            <div className="grid lg:grid-cols-12 gap-10 md:gap-12 lg:gap-16 items-start">
               <div className="lg:col-span-6">
                 <p className="text-xs font-semibold text-accent tracking-widest uppercase">For prop firm traders</p>
                 <h2 className="mt-2 h2-fluid font-bold text-primary tracking-tighter2">
@@ -1318,18 +1318,18 @@
                   </li>
                 </ul>
                 <div className="mt-9 flex flex-col sm:flex-row gap-3">
-                  <a href={DEFAULT_CHECKOUT_URL} className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3 rounded-md transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]">
+                  <a href={DEFAULT_CHECKOUT_URL} className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3.5 rounded-md transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto">
                     Start My Free Trial
                     <ArrowRightIcon className="w-4 h-4" />
                   </a>
-                  <a href="#features" className="inline-flex items-center justify-center gap-2 border border-border hover:border-primary/40 text-primary font-semibold px-6 py-3 rounded-md transition-colors">
+                  <a href="#features" className="inline-flex items-center justify-center gap-2 border border-border hover:border-primary/40 text-primary font-semibold px-6 py-3.5 rounded-md transition-colors w-full sm:w-auto">
                     See all features
                   </a>
                 </div>
                 <p className="mt-3 text-xs text-muted/90">MT5 credentials encrypted locally — never transmitted to our servers.</p>
               </div>
               <div className="lg:col-span-6">
-                <div className="border border-border bg-surface rounded-2xl p-7 md:p-8 shadow-xl shadow-gray-200/60">
+                <div className="border border-border bg-surface rounded-2xl p-5 md:p-8 shadow-xl shadow-gray-200/60">
                   <div className="flex items-center justify-between mb-5">
                     <span className="text-[10px] font-bold tracking-widest uppercase text-muted">Prop firm presets · pre-loaded</span>
                     <span className="text-[10px] font-bold tabular-nums text-accent">13</span>
@@ -1376,18 +1376,18 @@
       ];
       return (
         <section id="how-it-works" className="border-b border-border">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
             <div className="max-w-3xl">
               <p className="text-xs font-bold tracking-[0.18em] uppercase text-muted mb-2">How It Works</p>
               <h2 className="mt-2 h2-fluid font-bold text-primary">From zero to a working leaderboard in ten minutes.</h2>
             </div>
 
             {/* Steps 01 + 02 — compact side-by-side setup cards */}
-            <div className="mt-16 grid md:grid-cols-2 gap-4">
+            <div className="mt-10 md:mt-16 grid md:grid-cols-2 gap-6 md:gap-4">
               {setupSteps.map((s) => (
                 <div
                   key={s.n}
-                  className="reveal border border-border bg-surface rounded-xl p-7 md:p-9 flex flex-col"
+                  className="reveal border border-border bg-surface rounded-xl p-6 md:p-9 flex flex-col"
                 >
                   <div className="flex items-center gap-3">
                     <span className="inline-flex items-center justify-center rounded-full border border-accent text-accent text-xs font-bold px-3 py-0.5">
@@ -1412,7 +1412,7 @@
             </div>
 
             {/* Step 03 — the payoff. Two-column, screenshot and text vertically centred. */}
-            <div className="reveal mt-16 md:mt-20 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
+            <div className="reveal mt-12 md:mt-20 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
               <div>
                 <div className="flex items-center gap-3">
                   <span className="inline-flex items-center justify-center rounded-full border border-accent text-accent text-xs font-bold px-3 py-0.5">
@@ -1463,15 +1463,15 @@
       ];
       return (
         <section id="features" className="reveal border-b border-border">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
             <div className="max-w-3xl">
               <p className="text-xs font-semibold text-muted tracking-widest uppercase">Features</p>
               <h2 className="mt-2 h2-fluid font-bold text-primary">Built for traders who measure.</h2>
-              <p className="mt-6 text-lg text-primary/80 max-w-2xl">Six things you won’t get from a generic copier — and the reason you’d switch.</p>
+              <p className="mt-4 md:mt-6 text-base md:text-lg text-primary/80 max-w-2xl">Six things you won’t get from a generic copier — and the reason you’d switch.</p>
             </div>
-            <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="mt-10 md:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {features.map(({ icon: I, name, desc }) => (
-                <div key={name} className="feature-card border border-border bg-surface rounded-xl p-7 flex flex-col">
+                <div key={name} className="feature-card border border-border bg-surface rounded-xl p-6 md:p-7 flex flex-col">
                   <div className="w-11 h-11 rounded-md border border-accent/30 bg-accent/10 flex items-center justify-center text-accent">
                     <I />
                   </div>
@@ -1598,16 +1598,16 @@
 
       return (
         <section id="compare" className="border-b border-border">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
             <div className="max-w-3xl">
               <p className="text-xs font-semibold text-muted tracking-widest uppercase">Compare</p>
               <h2 className="mt-2 h2-fluid font-bold text-primary"><SI>Honest</SI> comparison with the four products you’re probably evaluating.</h2>
-              <p className="mt-6 text-lg text-primary/80 max-w-2xl leading-relaxed">
+              <p className="mt-4 md:mt-6 text-base md:text-lg text-primary/80 max-w-2xl leading-relaxed">
                 Read the rows where every competitor has a tick — that’s a level playing field. Read the rows where only one column has a tick — that’s a real difference. We won’t pretend ASA does things it doesn’t.
               </p>
             </div>
 
-            <div className="mt-12 -mx-6 px-6 overflow-x-auto no-scrollbar">
+            <div className="mt-10 md:mt-12 -mx-5 md:-mx-6 px-5 md:px-6 overflow-x-auto no-scrollbar">
               <table className="min-w-[920px] w-full text-sm border-collapse">
                 <thead>
                   <tr>
@@ -1675,7 +1675,7 @@
             </div>
 
             {/* Pending Window explainer — the #1 reason this table matters */}
-            <div className="mt-10 border border-accent/30 bg-accent/[0.05] rounded-xl p-6 md:p-7 max-w-3xl relative overflow-hidden">
+            <div className="mt-8 md:mt-10 border border-accent/30 bg-accent/[0.05] rounded-xl p-5 md:p-7 max-w-3xl relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent"></div>
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-md border border-accent/40 bg-accent/15 flex items-center justify-center text-accent shrink-0">
@@ -1735,14 +1735,14 @@
       ];
       return (
         <section className="border-b border-border">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
             <div className="max-w-3xl">
               <p className="text-xs font-semibold text-muted tracking-widest uppercase">Security &amp; trust</p>
               <h2 className="mt-2 h2-fluid font-bold text-primary">You set the rules. ASA follows them.</h2>
             </div>
-            <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="mt-10 md:mt-14 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               {cards.map(({ icon: I, title, desc }) => (
-                <div key={title} className="security-card relative border border-border bg-surface rounded-xl p-8 overflow-hidden">
+                <div key={title} className="security-card relative border border-border bg-surface rounded-xl p-5 md:p-8 overflow-hidden">
                   <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-70"></div>
                   <div className="w-11 h-11 rounded-md border border-accent/30 bg-accent/10 flex items-center justify-center text-accent">
                     <I />
@@ -1890,11 +1890,11 @@
       return (
       <>
         <section id="pricing" data-pricing-mode="waitlist" className="border-b border-border">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
             <div className="max-w-3xl">
               <p className="text-xs font-bold tracking-[0.18em] uppercase text-muted mb-2">Pricing</p>
               <h2 className="mt-2 h2-fluid font-bold text-primary">Simple pricing. <SI>No surprises.</SI></h2>
-              <p className="mt-6 text-lg text-primary/80">14-day free trial on every plan. Cancel any time.</p>
+              <p className="mt-4 md:mt-6 text-base md:text-lg text-primary/80">14-day free trial on every plan. Cancel any time.</p>
               <div className="mt-6 inline-flex items-start gap-3 border border-accent/30 bg-accent/[0.05] rounded-md px-4 py-3 max-w-xl">
                 <CheckIcon className="w-4 h-4 mt-0.5 text-accent shrink-0" />
                 <p className="text-sm text-primary/85 leading-snug">
@@ -1921,13 +1921,13 @@
               </button>
             </div>
 
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-4">
               {tiers.map((t) => {
                 const price = annual ? Math.round(t.annual / 12) : t.monthly;
                 return (
                   <div
                     key={t.name}
-                    className={`rounded-xl p-8 flex flex-col relative ${
+                    className={`rounded-xl p-6 md:p-8 flex flex-col relative ${
                       t.name === 'Starter'
                         ? 'bg-gradient-to-br from-white to-zinc-50 border border-zinc-200 hover:-translate-y-1 transition-transform duration-200'
                         : t.name === 'Pro'
@@ -1978,7 +1978,7 @@
             </p>
 
             {/* Quiz funnel — secondary entry point right at the decision moment */}
-            <div className="mt-14 border border-border bg-surface rounded-2xl p-7 md:p-9 flex flex-col md:flex-row md:items-center gap-5 shadow-xl shadow-gray-200/50">
+            <div className="mt-12 md:mt-14 border border-border bg-surface rounded-2xl p-6 md:p-9 flex flex-col md:flex-row md:items-center gap-5 shadow-xl shadow-gray-200/50">
               <div className="w-14 h-14 rounded-2xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent shrink-0 mx-auto md:mx-0">
                 <HelpIcon className="w-6 h-6" />
               </div>
@@ -1990,7 +1990,7 @@
               </div>
               <button
                 onClick={openQuiz}
-                className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3 rounded-md transition-colors shrink-0 shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]"
+                className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3.5 rounded-md transition-colors shrink-0 shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full md:w-auto"
               >
                 Take the 60-second quiz
                 <ArrowRightIcon className="w-4 h-4" />
@@ -2035,19 +2035,19 @@
 
       return (
         <section id="faq" className="border-b border-border">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24">
             <div className="max-w-3xl">
               <p className="text-xs font-bold tracking-[0.18em] uppercase text-muted mb-2">FAQ</p>
               <h2 className="mt-2 h2-fluid font-bold text-primary"><SI>Straight</SI> answers.</h2>
             </div>
-            <div className="mt-14">
+            <div className="mt-10 md:mt-14">
               {items.map((it, i) => {
                 const isOpen = open.has(i);
                 return (
                   <div key={i} className={`${i === 0 ? 'border-t border-border' : ''} border-b border-border`}>
                     <button
                       onClick={() => toggle(i)}
-                      className="w-full flex items-start justify-between gap-6 py-6 text-left group"
+                      className="w-full flex items-start justify-between gap-4 md:gap-6 py-5 md:py-6 text-left group min-h-[56px]"
                       aria-expanded={isOpen}
                     >
                       <span className="text-base md:text-lg font-semibold text-primary group-hover:text-accent transition-colors">{it.q}</span>
@@ -2057,7 +2057,7 @@
                     </button>
                     <div className={`faq-grid ${isOpen ? 'open' : ''}`}>
                       <div className="faq-inner">
-                        <p className="text-primary/75 pb-6 pr-10 max-w-3xl leading-relaxed">{it.a}</p>
+                        <p className="text-sm md:text-base text-primary/75 pb-6 pr-4 md:pr-10 max-w-3xl leading-relaxed">{it.a}</p>
                       </div>
                     </div>
                   </div>
@@ -2076,17 +2076,17 @@
       const openQuiz = useOpenQuiz();
       return (
         <section className="border-b border-border bg-surface">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24 text-center">
+          <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24 text-center">
             <h2 className="h2-fluid font-bold text-primary tracking-tighter2 max-w-3xl mx-auto">
               Stop <SI>guessing</SI> which signals work.
             </h2>
-            <p className="mt-8 text-lg md:text-xl text-primary/80 max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-6 md:mt-8 text-base md:text-xl text-primary/80 max-w-2xl mx-auto leading-relaxed">
               Start your 14-day free trial. No card required. Cancel anytime.
             </p>
-            <div className="mt-12 flex justify-center">
+            <div className="mt-10 md:mt-12 flex justify-center">
               <a
                 href={DEFAULT_CHECKOUT_URL}
-                className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-8 py-4 rounded-md transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]"
+                className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-8 py-4 rounded-md transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto"
               >
                 Start My Free Trial
                 <ArrowRightIcon className="w-4 h-4" />
@@ -2116,8 +2116,8 @@
        ============================================================ */
     const Footer = () => (
       <footer className="bg-primary text-bg">
-        <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+        <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-20">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
             <div className="col-span-2 md:col-span-1">
               <AsaWordmark className="h-7 w-auto brightness-0 invert" loading="lazy" />
               <p className="mt-5 text-sm text-bg/80 max-w-xs leading-relaxed">Signal attribution for serious traders.</p>
@@ -2154,7 +2154,7 @@
             </div>
           </div>
 
-          <div className="mt-16 pt-8 border-t border-bg/15">
+          <div className="mt-12 md:mt-16 pt-6 md:pt-8 border-t border-bg/15">
             <p className="text-xs text-bg/55 leading-relaxed max-w-4xl">
               Trading CFDs carries substantial risk. 74–89% of retail accounts lose money. ASA Systems provides software tools only, not investment advice. Past performance does not guarantee future results.
             </p>
