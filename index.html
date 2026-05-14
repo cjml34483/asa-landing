@@ -1,0 +1,2831 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ASA Systems — Signal attribution for serious traders</title>
+  <meta name="description" content="ASA Systems is a Windows desktop app that auto-copies Telegram and Discord signals to MetaTrader 5 and shows you which signal providers are actually profitable." />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="icon" href="assets/favicon-16.png" type="image/png" sizes="16x16" />
+  <link rel="shortcut icon" href="assets/favicon.ico" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg:      '#FAFAF8',
+            surface: '#FFFFFF',
+            'surface-2': '#F3F4F6',
+            border:  '#E5E7EB',
+            primary: '#111827',
+            muted:   '#6B7280',
+            accent:  '#37AA35',
+            'accent-dark': '#2d8f33',
+            warn:    '#DC2626',
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          letterSpacing: {
+            tightish: '-0.02em',
+            tighter2: '-0.03em',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      background: #FAFAF8;
+      color: #111827;
+      font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+      font-weight: 400;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    h1, h2, h3, h4 { letter-spacing: -0.025em; line-height: 1.08; }
+    section[id] { scroll-margin-top: 80px; }
+
+    .font-display { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; font-weight: 800; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+    .hero-screenshot {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+      position: relative;
+    }
+    .hero-screenshot > img {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      -ms-interpolation-mode: bicubic;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+    /* ASA wordmark overlay — hides the in-app Tradespace logo in the top-left of the screenshot.
+       Sidebar bg in hero-dashboard-full.png is #E4E4E7 — patch is invisible.
+       Percentages are relative to the hero-screenshot wrapper, which sizes 1:1 with the img. */
+    .hero-logo-overlay {
+      position: absolute;
+      top: 0.7%;
+      left: 0.4%;
+      width: 7.4%;
+      height: 3.5%;
+      background: #E4E4E7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 0.3%;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .hero-logo-overlay img {
+      height: 78%;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+      image-rendering: auto;
+      filter: saturate(0.4) brightness(0.68);
+    }
+
+    /* Scroll-reveal — sections fade up as they enter the viewport */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-screenshot { animation: none; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
+    .h1-hero { font-size: clamp(2.25rem, 3.6vw + 1rem, 4.5rem); line-height: 1.05; letter-spacing: -0.03em; }
+    .h1-fluid { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; }
+    .h2-fluid { font-size: clamp(2.25rem, 3.6vw, 3rem); line-height: 1.1; }
+    .bg-pain { background: radial-gradient(circle at 50% 0%, rgba(220,38,38,0.06), transparent 60%), var(--bg); }
+    .bg-prop { background: radial-gradient(circle at 50% 0%, rgba(55,170,53,0.06), transparent 55%), var(--bg); }
+    .number-huge { font-size: clamp(2.25rem, 3.6vw, 3rem); line-height: 1; letter-spacing: -0.03em; }
+    .step-huge { font-size: clamp(3.5rem, 6.5vw, 5.5rem); line-height: 0.9; letter-spacing: -0.04em; }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .faq-grid { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 260ms cubic-bezier(.2,.0,.0,1), opacity 200ms ease; opacity: 0; }
+    .faq-grid.open { grid-template-rows: 1fr; opacity: 1; }
+    .faq-inner { overflow: hidden; }
+
+    .feature-card { transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease; }
+    .feature-card:hover { border-color: rgba(17,24,39,0.25); box-shadow: 0 8px 24px -12px rgba(17,24,39,0.10); }
+
+    /* Popup widget animation */
+    .widget-card-enter { transform: translateY(8px) scale(0.96); opacity: 0; }
+    .widget-card-enter-active { transform: translateY(0) scale(1); opacity: 1; transition: transform 200ms cubic-bezier(.2,.0,.0,1), opacity 200ms ease; }
+
+    /* Quiz funnel modal */
+    .quiz-overlay { animation: quizFade 200ms ease forwards; }
+    .quiz-card    { animation: quizPop 260ms cubic-bezier(.2,.0,.0,1) forwards; }
+    .quiz-step    { animation: quizSlide 220ms cubic-bezier(.2,.0,.0,1) forwards; }
+    @keyframes quizFade  { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes quizPop   { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes quizSlide { from { opacity: 0; transform: translateX(8px); }            to { opacity: 1; transform: translateX(0); } }
+
+    /* Thank-you page check mark animation */
+    @keyframes checkScale  { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes checkStroke { from { stroke-dashoffset: 60; }            to { stroke-dashoffset: 0; } }
+    .ty-check-circle { animation: checkScale 380ms cubic-bezier(.2,.0,.0,1) forwards; }
+    .ty-check-path   { stroke-dasharray: 60; stroke-dashoffset: 60; animation: checkStroke 480ms 220ms cubic-bezier(.2,.0,.0,1) forwards; }
+
+    /* Interactive table rows */
+    tbody tr { transition: background 130ms ease; }
+    tbody tr:not(.no-hover):hover { background: rgba(55,170,53,0.04); }
+
+    /* Security cards — same hover as feature cards */
+    .security-card { transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease; }
+    .security-card:hover { border-color: rgba(55,170,53,0.35); transform: translateY(-2px); box-shadow: 0 12px 28px -12px rgba(55,170,53,0.12); }
+
+    /* Stat band cards */
+    .stat-card { transition: background 200ms ease; }
+    .stat-card:hover { background: rgba(55,170,53,0.03); }
+
+    /* Mock leaderboard rows in hero — subtle hover to feel alive */
+    .mock-row { transition: background 120ms ease; }
+    .mock-row:hover { background: rgba(0,212,170,0.07) !important; }
+
+    /* Smoother nav link underline */
+    nav a { position: relative; }
+
+    /* FAQ question hover */
+    .faq-btn { transition: color 150ms ease; }
+
+    /* ============================================================
+       HTML mock components — render like real app screenshots
+       ============================================================ */
+    .mock-root {
+      will-change: transform;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    .mock-root .tnum { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
+
+    /* Dashboard mock — dark theme */
+    .dash-mock {
+      background: #0d0f12;
+      color: #e8eaed;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px -30px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+    .dash-mock .surface { background: #161a1f; border: 1px solid #2a2f38; }
+    .dash-mock .pill {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      border: 1px solid #2a2f38;
+      background: #1c2128;
+      color: #cbd5e1;
+    }
+    .dash-mock .pill-accent { color: #4ade80; border-color: rgba(74,222,128,0.35); background: rgba(74,222,128,0.08); }
+    .dash-mock .pill-orange { color: #f97316; border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.08); }
+    .dash-mock .text-muted-dark { color: #6b7280; }
+    .dash-mock .text-green { color: #4ade80; }
+    .dash-mock .text-orange { color: #f97316; }
+
+    /* Trade-history mock — light theme */
+    .th-mock { background: #ffffff; color: #111827; }
+    .th-mock .row-divider { border-top: 1px solid #e5e7eb; }
+    .th-mock .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700; line-height: 1.4;
+    }
+    .th-mock .pill-green { background: rgba(55,170,53,0.12); color: #2d8f33; }
+    .th-mock .pill-amber { background: rgba(245,158,11,0.14); color: #b45309; }
+    .th-mock .pill-purple { background: rgba(139,92,246,0.12); color: #6d28d9; }
+    .th-mock .pill-gray  { background: #f3f4f6; color: #374151; }
+    .th-mock .pill-red   { background: rgba(239,68,68,0.12); color: #b91c1c; }
+
+    .tt-row { transition: background 130ms ease; }
+    .tt-row:hover { background: #f9fafb; }
+  </style>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-bg text-primary">
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useRef, Fragment } = React;
+
+    // ──────────────────────────────────────────────────────────────
+    //  Stripe checkout URL placeholders (replaced at deploy time)
+    // ──────────────────────────────────────────────────────────────
+    // The literal strings below are deploy-time placeholders. The
+    // build/deploy pipeline (Vercel env injection, sed step, or a
+    // .env-driven pre-build script) replaces them with the live
+    // Stripe Checkout links pulled from STRIPE_CHECKOUT_URL_STARTER,
+    // STRIPE_CHECKOUT_URL_PRO, and STRIPE_CHECKOUT_URL_ELITE.
+    //
+    // Public tier name "Scale" maps to internal canonical "elite"
+    // (matches billing.py's TIER_ALIASES — keeps the landing copy
+    // and the Stripe price IDs in lockstep without a rename here).
+    const STRIPE_CHECKOUT_URLS = {
+      starter: "STRIPE_CHECKOUT_URL_STARTER",
+      pro:     "STRIPE_CHECKOUT_URL_PRO",
+      scale:   "STRIPE_CHECKOUT_URL_ELITE",
+      elite:   "STRIPE_CHECKOUT_URL_ELITE",
+    };
+    const DEFAULT_CHECKOUT_URL = STRIPE_CHECKOUT_URLS.pro;
+
+    /* ============================================================
+       CountUp — animates a number from 0 → end when scrolled into
+       view. Uses IntersectionObserver + requestAnimationFrame with
+       an ease-out cubic. Triggers once, then stays put.
+       ============================================================ */
+    const CountUp = ({ end, duration = 800, suffix = "", className = "" }) => {
+      const [val, setVal] = useState(0);
+      const ref = useRef(null);
+      const startedRef = useRef(false);
+
+      useEffect(() => {
+        const node = ref.current;
+        if (!node) return;
+        if (typeof IntersectionObserver === "undefined") {
+          setVal(end);
+          return;
+        }
+        const run = () => {
+          if (startedRef.current) return;
+          startedRef.current = true;
+          const t0 = performance.now();
+          const tick = (now) => {
+            const t = Math.min(1, (now - t0) / duration);
+            const eased = 1 - Math.pow(1 - t, 3);
+            setVal(Math.round(eased * end));
+            if (t < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        };
+        const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce) { setVal(end); return; }
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach((e) => { if (e.isIntersecting) { run(); obs.disconnect(); } });
+        }, { threshold: 0.4 });
+        obs.observe(node);
+        return () => obs.disconnect();
+      }, [end, duration]);
+
+      return <span ref={ref} className={className}>{val}{suffix}</span>;
+    };
+
+    /* ============================================================
+       useReveal — adds a `visible` class to every `.reveal` element
+       as it enters the viewport. CSS handles the fade/translate.
+       ============================================================ */
+    const useReveal = () => {
+      useEffect(() => {
+        const els = document.querySelectorAll('.reveal');
+        if (!els.length) return;
+        if (typeof IntersectionObserver === "undefined") {
+          els.forEach((el) => el.classList.add('visible'));
+          return;
+        }
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add('visible');
+              obs.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+        els.forEach((el) => obs.observe(el));
+        return () => obs.disconnect();
+      }, []);
+    };
+
+    /* ============================================================
+       Brand wordmark — the real raster lockup from
+       marketing/landing/assets/asa-systems-wordmark.png.
+       The SVG variants in branding/svg/ are a flat/simplified
+       composite (crossbarless chevron A's + folded ribbon) that
+       reads as "ΛΞΛ" at small sizes; the PNG is the proper brand
+       mark with crossbar A's, depth-shaded green S, and "SYSTEMS"
+       typeset alongside.
+       ============================================================ */
+    const AsaWordmark = ({ className = "h-8 w-auto", loading = "eager", style }) => (
+      <img
+        src="assets/asa-systems-wordmark.png"
+        alt="ASA Systems"
+        className={className}
+        draggable={false}
+        loading={loading}
+        style={style}
+      />
+    );
+
+    /* ============================================================
+       DashboardMock — HTML/SVG replica of the ASA Terminal dark UI.
+       Renders inside the hero in place of a screenshot.
+       ============================================================ */
+    const DashboardMock = () => {
+      // Build a simplified candlestick series (ranging pattern, 30 bars)
+      const candles = [];
+      const baseY = 4760;
+      const rangeHi = 4830;
+      const rangeLo = 4690;
+      const seed = [
+        [4760, 4778, 4752, 4770, 1], [4770, 4790, 4762, 4785, 1], [4785, 4798, 4774, 4780, 0],
+        [4780, 4795, 4768, 4774, 0], [4774, 4790, 4760, 4788, 1], [4788, 4810, 4782, 4805, 1],
+        [4805, 4820, 4795, 4812, 1], [4812, 4825, 4806, 4810, 0], [4810, 4818, 4790, 4795, 0],
+        [4795, 4808, 4780, 4802, 1], [4802, 4820, 4798, 4818, 1], [4818, 4830, 4810, 4815, 0],
+        [4815, 4822, 4795, 4800, 0], [4800, 4812, 4785, 4790, 0], [4790, 4805, 4775, 4802, 1],
+        [4802, 4818, 4795, 4815, 1], [4815, 4824, 4806, 4810, 0], [4810, 4815, 4792, 4798, 0],
+        [4798, 4810, 4785, 4805, 1], [4805, 4820, 4798, 4815, 1], [4815, 4828, 4808, 4820, 1],
+        [4820, 4825, 4805, 4810, 0], [4810, 4815, 4790, 4795, 0], [4795, 4810, 4785, 4806, 1],
+        [4806, 4818, 4798, 4812, 1], [4812, 4818, 4800, 4805, 0], [4805, 4815, 4790, 4798, 0],
+        [4798, 4815, 4795, 4812, 1], [4812, 4820, 4805, 4815, 1], [4815, 4822, 4808, 4813, 1],
+      ];
+
+      // Chart dims
+      const W = 760, H = 280;
+      const padL = 8, padR = 56, padT = 12, padB = 28;
+      const chartW = W - padL - padR;
+      const chartH = H - padT - padB;
+      const priceHi = 4840, priceLo = 4680;
+      const yFor = (p) => padT + ((priceHi - p) / (priceHi - priceLo)) * chartH;
+      const xFor = (i) => padL + (i + 0.5) * (chartW / seed.length);
+      const cw = (chartW / seed.length) * 0.62;
+
+      // Two MA lines — generated as smooth curves through approximate values
+      const ma1Pts = seed.map((c, i) => `${xFor(i).toFixed(1)},${yFor(c[3] + 4).toFixed(1)}`).join(' ');
+      const ma2Pts = seed.map((c, i) => `${xFor(i).toFixed(1)},${yFor(c[3] - 8).toFixed(1)}`).join(' ');
+
+      const priceLabels = [4900, 4860, 4820, 4780, 4740, 4700, 4660];
+
+      const metric = (label, value, valueClass, sub) => (
+        <div className="surface tnum" style={{ padding: '10px 12px', borderRadius: 8, minWidth: 0 }}>
+          <div style={{ fontSize: 9, letterSpacing: '0.12em', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase' }}>{label}</div>
+          <div className={`tnum ${valueClass || ''}`} style={{ fontSize: 22, fontWeight: 700, color: valueClass ? undefined : '#e8eaed', marginTop: 4, lineHeight: 1 }}>{value}</div>
+          <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 5, lineHeight: 1.3 }}>{sub}</div>
+        </div>
+      );
+
+      return (
+        <div className="dash-mock mock-root" style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', fontSize: 12 }}>
+          {/* Header bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px', borderBottom: '1px solid #2a2f38', background: '#0d0f12' }}>
+            <img src="branding/wordmark-header.png" alt="ASA" style={{ height: 16, width: 'auto', opacity: 0.95 }} onError={(e)=>{ e.currentTarget.style.display='none'; }} draggable={false} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: '#cbd5e1', flexWrap: 'nowrap', overflow: 'hidden' }}>
+              <span style={{ fontWeight: 700, color: '#e8eaed' }}>XAUUSD</span>
+              <span style={{ color: '#6b7280' }}>·</span>
+              <span style={{ color: '#9ca3af' }}>Gold</span>
+              <span className="tnum" style={{ color: '#e8eaed', fontWeight: 600 }}>4813.17 / 4813.39</span>
+              <span className="pill" style={{ fontSize: 9 }}>SPR 22</span>
+              <span className="tnum text-green" style={{ fontWeight: 700 }}>+£356.06</span>
+              <span className="pill">RANGING</span>
+              <span className="pill">NEW YORK</span>
+            </div>
+            <div style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: '#4ade80', boxShadow: '0 0 8px rgba(74,222,128,0.7)' }}></span>
+              <span style={{ fontSize: 9, letterSpacing: '0.12em', fontWeight: 700, color: '#4ade80', textTransform: 'uppercase' }}>Monitoring</span>
+            </div>
+          </div>
+
+          {/* Metric cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: 8, padding: '10px 12px' }}>
+            {metric('Balance',        '£2226.40', '',           'start £1870.34')}
+            {metric('Day P&L',        '+£356.06', 'text-green', 'bot +£35.47 · man +£320.59')}
+            {metric('Win Rate',       '87%',      'text-green', 'bot 56% (5/9) · man 100% (21/21)')}
+            {metric('Drawdown',       '0.0%',     '',           'from peak')}
+            {metric('Profit Factor',  '6.69',     'text-green', 'WE418.66 / LE62.60')}
+            {metric('Active Signal',  '—',        '',           'no signal')}
+          </div>
+
+          {/* Bottom metrics strip */}
+          <div className="tnum" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 14px', borderTop: '1px solid #2a2f38', borderBottom: '1px solid #2a2f38', fontSize: 10, color: '#9ca3af', overflow: 'hidden', flexWrap: 'wrap' }}>
+            <span><span style={{ color: '#6b7280', letterSpacing: '0.1em', fontWeight: 700 }}>AVG EXEC</span> <span style={{ color: '#e8eaed', fontWeight: 600 }}>40.1pip</span></span>
+            <span style={{ color: '#2a2f38' }}>|</span>
+            <span><span style={{ color: '#6b7280', letterSpacing: '0.1em', fontWeight: 700 }}>STREAK</span> <span style={{ color: '#4ade80', fontWeight: 600 }}>W2</span></span>
+            <span style={{ color: '#2a2f38' }}>|</span>
+            <span><span style={{ color: '#6b7280', letterSpacing: '0.1em', fontWeight: 700 }}>EXPECTANCY</span> <span style={{ color: '#4ade80', fontWeight: 600 }}>+£11.87</span></span>
+            <span style={{ color: '#2a2f38' }}>|</span>
+            <span><span style={{ color: '#6b7280', letterSpacing: '0.1em', fontWeight: 700 }}>TRADES</span> <span style={{ color: '#e8eaed', fontWeight: 600 }}>30</span></span>
+            <span style={{ color: '#2a2f38' }}>|</span>
+            <span><span style={{ color: '#6b7280', letterSpacing: '0.1em', fontWeight: 700 }}>EXPOSURE</span> <span style={{ color: '#e8eaed', fontWeight: 600 }}>0.00L</span></span>
+            <span style={{ color: '#2a2f38' }}>|</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ color: '#6b7280', letterSpacing: '0.1em', fontWeight: 700 }}>RISK</span>
+              <span style={{ display: 'inline-flex', gap: 2 }}>
+                {[1,2,3,4].map(i => <span key={i} style={{ width: 6, height: 6, background: i <= 1 ? '#4ade80' : '#2a2f38' }}></span>)}
+              </span>
+              <span style={{ color: '#4ade80', fontWeight: 700 }}>LOW</span>
+            </span>
+          </div>
+
+          {/* Chart */}
+          <div style={{ background: '#0d0f12', padding: '8px 0 0' }}>
+            <svg viewBox={`0 0 ${W} ${H}`} width="100%" preserveAspectRatio="none" style={{ display: 'block', height: 260 }}>
+              {/* gridlines */}
+              {priceLabels.map((p) => (
+                <line key={p} x1={padL} x2={W - padR} y1={yFor(p)} y2={yFor(p)} stroke="#1c2128" strokeWidth="1" />
+              ))}
+
+              {/* candles */}
+              {seed.map(([o,h,l,c,up], i) => {
+                const x = xFor(i);
+                const color = up ? '#4ade80' : '#ef4444';
+                return (
+                  <g key={i}>
+                    <line x1={x} x2={x} y1={yFor(h)} y2={yFor(l)} stroke={color} strokeWidth="1" />
+                    <rect
+                      x={x - cw/2}
+                      y={yFor(Math.max(o, c))}
+                      width={cw}
+                      height={Math.max(1, Math.abs(yFor(o) - yFor(c)))}
+                      fill={color}
+                      opacity="0.95"
+                    />
+                  </g>
+                );
+              })}
+
+              {/* MA lines */}
+              <polyline points={ma1Pts} fill="none" stroke="#22d3ee" strokeWidth="1.5" opacity="0.85" />
+              <polyline points={ma2Pts} fill="none" stroke="#e8eaed" strokeWidth="1.2" opacity="0.7" />
+
+              {/* VWAP labels */}
+              <g fontFamily="Plus Jakarta Sans, system-ui, sans-serif" fontSize="9" fontWeight="700">
+                <text x={W - padR + 4} y={yFor(4812.7)} fill="#f97316">4,812.698</text>
+                <text x={W - padR + 4} y={yFor(4798)} fill="#22d3ee">4,811.353</text>
+                <text x={W - padR + 4} y={yFor(4775)} fill="#3b82f6">4,795.744</text>
+              </g>
+
+              {/* price axis labels (right) */}
+              <g fontFamily="Plus Jakarta Sans, system-ui, sans-serif" fontSize="9" fill="#6b7280">
+                {priceLabels.map((p) => (
+                  <text key={p} x={W - padR + 4} y={yFor(p) + 3} className="tnum">{p}</text>
+                ))}
+              </g>
+            </svg>
+          </div>
+        </div>
+      );
+    };
+
+    /* ============================================================
+       TradeHistoryMock — light-theme analytics screen with equity
+       curve, source breakdown table, and session distribution.
+       ============================================================ */
+    const TradeHistoryMock = () => {
+      // Equity curve points (SVG path)
+      const W = 720, H = 180;
+      const padL = 50, padR = 12, padT = 12, padB = 24;
+      const cw = W - padL - padR;
+      const ch = H - padT - padB;
+      const yMin = 2603, yMax = 2938;
+      const eqY = (v) => padT + ((yMax - v) / (yMax - yMin)) * ch;
+      const eqX = (i, n) => padL + (i / (n - 1)) * cw;
+      const eqVals = [
+        2603, 2598, 2602, 2595, 2588, 2580, 2585, 2592, 2598, 2605,
+        2612, 2620, 2630, 2645, 2660, 2680, 2705, 2735, 2768, 2800,
+        2828, 2858, 2885, 2905, 2920, 2930, 2935, 2938,
+      ];
+      const path = eqVals.map((v, i) => `${i === 0 ? 'M' : 'L'} ${eqX(i, eqVals.length).toFixed(1)} ${eqY(v).toFixed(1)}`).join(' ');
+      const areaPath = `${path} L ${eqX(eqVals.length - 1, eqVals.length).toFixed(1)} ${eqY(yMin).toFixed(1)} L ${eqX(0, eqVals.length).toFixed(1)} ${eqY(yMin).toFixed(1)} Z`;
+      const yLabels = [2938, 2854, 2770, 2687, 2603];
+
+      // Mini sparkline for "By Source" table rows
+      const sparkPts = (vals, w = 60, h = 18) => {
+        const lo = Math.min(...vals);
+        const hi = Math.max(...vals);
+        return vals.map((v, i) => `${((i / (vals.length - 1)) * w).toFixed(1)},${(h - ((v - lo) / (hi - lo || 1)) * h).toFixed(1)}`).join(' ');
+      };
+
+      const cellLabel = (txt) => (
+        <span style={{ fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, color: '#6b7280' }}>{txt}</span>
+      );
+
+      return (
+        <div className="th-mock mock-root" style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', borderRadius: 16, border: '1px solid #e5e7eb', boxShadow: '0 30px 80px -30px rgba(17,24,39,0.25), 0 0 0 1px rgba(0,0,0,0.02)' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', borderBottom: '1px solid #e5e7eb' }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: '#111827', letterSpacing: '-0.02em' }}>Trade History</span>
+            <span style={{ marginLeft: 'auto', fontSize: 11, color: '#374151', border: '1px solid #e5e7eb', borderRadius: 6, padding: '3px 9px', background: '#fff' }}>Today ▾</span>
+            <span style={{ fontSize: 11, color: '#374151', border: '1px solid #e5e7eb', borderRadius: 6, padding: '3px 9px', background: '#fff' }}>All trades ▾</span>
+          </div>
+
+          {/* Top metrics strip */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0,1fr))', gap: 0, padding: '14px 18px', borderBottom: '1px solid #e5e7eb' }}>
+            <div style={{ borderRight: '1px solid #e5e7eb', paddingRight: 12 }}>
+              {cellLabel('Net P&L')}
+              <div className="tnum" style={{ fontSize: 22, fontWeight: 800, color: '#2d8f33', marginTop: 4, letterSpacing: '-0.02em' }}>+£232.77</div>
+              <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 3, display: 'flex', gap: 6 }}>
+                <span style={{ color: '#2d8f33', fontWeight: 700 }}>Today +£190.03</span>
+                <span>7d +£232.77</span>
+                <span>30d +£232.77</span>
+              </div>
+            </div>
+            <div style={{ borderRight: '1px solid #e5e7eb', padding: '0 12px' }}>
+              {cellLabel('Trades')}
+              <div className="tnum" style={{ fontSize: 22, fontWeight: 800, color: '#111827', marginTop: 4 }}>46</div>
+              <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>23W · 23L · 23.0/day</div>
+            </div>
+            <div style={{ borderRight: '1px solid #e5e7eb', padding: '0 12px' }}>
+              {cellLabel('Win Rate')}
+              <div className="tnum" style={{ fontSize: 22, fontWeight: 800, color: '#111827', marginTop: 4 }}>50%</div>
+              <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>streak 8W / 5L</div>
+            </div>
+            <div style={{ borderRight: '1px solid #e5e7eb', padding: '0 12px' }}>
+              {cellLabel('Best')}
+              <div className="tnum" style={{ fontSize: 18, fontWeight: 800, color: '#2d8f33', marginTop: 4 }}>+£74.94</div>
+              <div style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>XAUUSD · MANUAL</div>
+            </div>
+            <div style={{ borderRight: '1px solid #e5e7eb', padding: '0 12px' }}>
+              {cellLabel('Worst')}
+              <div className="tnum" style={{ fontSize: 18, fontWeight: 800, color: '#b91c1c', marginTop: 4 }}>−£39.35</div>
+              <div style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>XAUUSD · TT Trades Premium</div>
+            </div>
+            <div style={{ paddingLeft: 12 }}>
+              {cellLabel('Profit Factor')}
+              <div className="tnum" style={{ fontSize: 22, fontWeight: 800, color: '#111827', marginTop: 4 }}>1.84</div>
+              <div className="tnum" style={{ fontSize: 9, color: '#6b7280', marginTop: 3 }}>recovery 2.28 · DD −£101.87</div>
+            </div>
+          </div>
+
+          {/* Signal vs Manual bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 18px', borderBottom: '1px solid #e5e7eb', fontSize: 10 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: 999, background: '#6d28d9' }}></span>
+              <span style={{ fontWeight: 700, color: '#111827' }}>Signal 93%</span>
+              <span className="tnum" style={{ color: '#2d8f33', fontWeight: 700 }}>+£74.60</span>
+            </span>
+            <div style={{ flex: 1, height: 6, borderRadius: 3, background: '#e5e7eb', overflow: 'hidden', display: 'flex' }}>
+              <div style={{ width: '93%', background: '#6d28d9' }}></div>
+              <div style={{ width: '7%', background: '#374151' }}></div>
+            </div>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: 999, background: '#374151' }}></span>
+              <span style={{ fontWeight: 700, color: '#111827' }}>Manual 7%</span>
+              <span className="tnum" style={{ color: '#2d8f33', fontWeight: 700 }}>+£158.17</span>
+            </span>
+          </div>
+
+          {/* Equity curve */}
+          <div style={{ padding: '12px 8px 8px 0', borderBottom: '1px solid #e5e7eb' }}>
+            <svg viewBox={`0 0 ${W} ${H}`} width="100%" preserveAspectRatio="none" style={{ display: 'block', height: 170 }}>
+              <defs>
+                <linearGradient id="eqfill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="#37AA35" stopOpacity="0.20"/>
+                  <stop offset="100%" stopColor="#37AA35" stopOpacity="0"/>
+                </linearGradient>
+              </defs>
+              {/* y-axis labels + gridlines */}
+              {yLabels.map((v) => (
+                <g key={v}>
+                  <line x1={padL} x2={W - padR} y1={eqY(v)} y2={eqY(v)} stroke="#f3f4f6" strokeWidth="1" />
+                  <text x={padL - 6} y={eqY(v) + 3} fontSize="9" textAnchor="end" fill="#9ca3af" className="tnum">£{v}</text>
+                </g>
+              ))}
+              <path d={areaPath} fill="url(#eqfill)" />
+              <path d={path} fill="none" stroke="#37AA35" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+              {eqVals.map((v, i) => (i % 3 === 0 ? <circle key={i} cx={eqX(i, eqVals.length)} cy={eqY(v)} r="2" fill="#37AA35"/> : null))}
+              {/* x labels */}
+              <text x={padL} y={H - 6} fontSize="9" fill="#9ca3af">13 May</text>
+              <text x={padL + cw/2} y={H - 6} fontSize="9" fill="#9ca3af" textAnchor="middle">13 May</text>
+              <text x={W - padR} y={H - 6} fontSize="9" fill="#9ca3af" textAnchor="end">14 May</text>
+            </svg>
+          </div>
+
+          {/* By Source table */}
+          <div style={{ padding: '12px 18px', borderBottom: '1px solid #e5e7eb' }}>
+            <div style={{ fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, color: '#6b7280', marginBottom: 8 }}>By Source</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 0.7fr 1fr 1fr 1fr 0.6fr', gap: 8, fontSize: 10, color: '#6b7280', paddingBottom: 6, borderBottom: '1px solid #f3f4f6', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <span>Source</span><span>Trades</span><span>P&L</span><span>Win Rate</span><span>Equity</span><span>Avg Hold</span>
+            </div>
+            {[
+              { dot: '#6d28d9', name: 'TT Trades Premium', trades: 43, pl: '+£74.60', plColor: '#2d8f33', wr: '47%', wrPill: 'pill-amber', spark: [10,11,9,12,13,14,16,15,17,18], hold: '7m' },
+              { dot: '#374151', name: 'Manual',             trades: 3,  pl: '+£158.17', plColor: '#2d8f33', wr: '100%', wrPill: 'pill-green', spark: null, hold: '55m' },
+            ].map((r) => (
+              <div key={r.name} className="tnum" style={{ display: 'grid', gridTemplateColumns: '2fr 0.7fr 1fr 1fr 1fr 0.6fr', gap: 8, fontSize: 11, padding: '8px 0', borderBottom: '1px solid #f9fafb', alignItems: 'center' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: '#111827', fontWeight: 600 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 999, background: r.dot }}></span>
+                  {r.name}
+                </span>
+                <span style={{ color: '#111827', fontWeight: 600 }}>{r.trades}</span>
+                <span style={{ color: r.plColor, fontWeight: 700 }}>{r.pl}</span>
+                <span><span className={`pill ${r.wrPill}`}>{r.wr}</span></span>
+                <span>
+                  {r.spark ? (
+                    <svg width="60" height="18" viewBox="0 0 60 18">
+                      <polyline points={sparkPts(r.spark)} fill="none" stroke="#37AA35" strokeWidth="1.4"/>
+                    </svg>
+                  ) : <span style={{ color: '#d1d5db' }}>—</span>}
+                </span>
+                <span style={{ color: '#374151' }}>{r.hold}</span>
+              </div>
+            ))}
+            <div className="tnum" style={{ display: 'grid', gridTemplateColumns: '2fr 0.7fr 1fr 1fr 1fr 0.6fr', gap: 8, fontSize: 11, padding: '8px 0', alignItems: 'center', fontWeight: 700 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: '#111827' }}>
+                <span style={{ width: 8, height: 8, background: '#111827' }}></span>
+                Total
+              </span>
+              <span style={{ color: '#111827' }}>46</span>
+              <span style={{ color: '#2d8f33' }}>+£232.77</span>
+              <span><span className="pill pill-amber">50%</span></span>
+              <span>
+                <svg width="60" height="18" viewBox="0 0 60 18">
+                  <polyline points={sparkPts([10,9,8,10,11,13,14,15,16,17,18])} fill="none" stroke="#37AA35" strokeWidth="1.4"/>
+                </svg>
+              </span>
+              <span style={{ color: '#374151' }}>11m</span>
+            </div>
+          </div>
+
+          {/* Session Distribution */}
+          <div style={{ padding: '14px 18px' }}>
+            <div style={{ fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, color: '#6b7280', marginBottom: 10 }}>Session Distribution</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 10 }}>
+              {[
+                { name: 'Asia',     hrs: '08–07 UTC', trades: 2,  pl: '+£144.89', col: '#2d8f33' },
+                { name: 'London',   hrs: '07–13 UTC', trades: 5,  pl: '−£18.90',  col: '#b91c1c' },
+                { name: 'New York', hrs: '13–21 UTC', trades: 33, pl: '+£49.27',  col: '#2d8f33' },
+              ].map((s) => (
+                <div key={s.name} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#111827', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{s.name}</span>
+                    <span className="tnum" style={{ fontSize: 9, color: '#6b7280' }}>{s.hrs}</span>
+                  </div>
+                  <div className="tnum" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 6 }}>
+                    <span style={{ fontSize: 10, color: '#6b7280' }}><span style={{ fontWeight: 700, color: '#111827' }}>{s.trades}</span> trades</span>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: s.col }}>{s.pl}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    /* ============================================================
+       TradeTableMock — the individual trade rows table (light).
+       ============================================================ */
+    const TradeTableMock = () => {
+      const rows = [
+        { time: '14 May, 14:11', src: 'TT Trades Premium', srcCls: 'pill-purple', dir: '▼', vol: '0.06L', open: '4698.70', close: '4705.00', exit: 'TP2', exitCls: 'pill-green', pl: '+£27.96', slip: '63.0p', score: '65', hold: '3m' },
+        { time: '14 May, 13:41', src: 'TT Trades Premium', srcCls: 'pill-purple', dir: '▼', vol: '0.06L', open: '4691.13', close: '4695.00', exit: '?',   exitCls: 'pill-gray',  pl: '+£17.18', slip: '38.7p', score: '65', hold: '4m' },
+        { time: '14 May, 04:15', src: 'Manual',            srcCls: 'pill-gray',   dir: '▼', vol: '0.3L',  open: '4696.62', close: '4700.00', exit: 'TP2', exitCls: 'pill-green', pl: '+£74.94', slip: '33.8p', score: '65', hold: '5m' },
+      ];
+      const Hdr = ({ children, align }) => (
+        <th style={{ fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, color: '#6b7280', padding: '12px 10px', textAlign: align || 'left', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' }}>{children}</th>
+      );
+      return (
+        <div className="th-mock mock-root" style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', borderRadius: 16, border: '1px solid #e5e7eb', boxShadow: '0 30px 80px -30px rgba(17,24,39,0.25), 0 0 0 1px rgba(0,0,0,0.02)' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 800, color: '#6b7280' }}>Trade History</span>
+            <span style={{ fontSize: 10, color: '#9ca3af' }} className="tnum">3 trades shown</span>
+          </div>
+          <div style={{ overflowX: 'auto', pointerEvents: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+              <thead>
+                <tr>
+                  <Hdr>Time</Hdr>
+                  <Hdr>Source</Hdr>
+                  <Hdr align="center">Dir</Hdr>
+                  <Hdr align="right">Vol</Hdr>
+                  <Hdr align="right">Open</Hdr>
+                  <Hdr align="right">Close</Hdr>
+                  <Hdr align="center">Exit</Hdr>
+                  <Hdr align="right">P&L</Hdr>
+                  <Hdr align="right">Slip</Hdr>
+                  <Hdr align="center">Score</Hdr>
+                  <Hdr align="right">Hold</Hdr>
+                  <Hdr>Notes/Tags</Hdr>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={i} className="tt-row no-hover" style={{ cursor: 'default' }}>
+                    <td className="tnum" style={{ padding: '14px 10px', color: '#374151', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap' }}>{r.time}</td>
+                    <td style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap' }}>
+                      <span className={`pill ${r.srcCls}`}>{r.src}</span>
+                    </td>
+                    <td style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', textAlign: 'center', color: '#b91c1c', fontWeight: 700 }}>{r.dir}</td>
+                    <td className="tnum" style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', textAlign: 'right', color: '#374151' }}>{r.vol}</td>
+                    <td className="tnum" style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', textAlign: 'right', color: '#111827', fontWeight: 600 }}>{r.open}</td>
+                    <td className="tnum" style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', textAlign: 'right', color: '#111827', fontWeight: 600 }}>{r.close}</td>
+                    <td style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', textAlign: 'center' }}>
+                      <span className={`pill ${r.exitCls}`}>{r.exit}</span>
+                    </td>
+                    <td className="tnum" style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', textAlign: 'right', color: '#2d8f33', fontWeight: 700 }}>{r.pl}</td>
+                    <td className="tnum" style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', textAlign: 'right', color: '#6b7280' }}>{r.slip}</td>
+                    <td style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', textAlign: 'center' }}>
+                      <span className="pill pill-amber">{r.score}</span>
+                    </td>
+                    <td className="tnum" style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', textAlign: 'right', color: '#374151' }}>{r.hold}</td>
+                    <td style={{ padding: '14px 10px', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap' }}>
+                      <span style={{ display: 'inline-flex', gap: 6 }}>
+                        <span style={{ fontSize: 10, padding: '3px 8px', border: '1px solid #e5e7eb', borderRadius: 999, color: '#374151' }}>+ Note</span>
+                        <span style={{ fontSize: 10, padding: '3px 8px', border: '1px solid #e5e7eb', borderRadius: 999, color: '#374151' }}>+ Tag</span>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    };
+
+    /* ============================================================
+       Serif italic accent for one phrase inside a sans headline.
+       Used sparingly (4–5 times across the page) — picks a single
+       editorial word out of an otherwise utilitarian sentence.
+       Weight is intentionally lighter than the surrounding bold to
+       avoid the slab-italic-bold look.
+       ============================================================ */
+    const SI = ({ children }) => (
+      <span style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontStyle: 'italic', fontWeight: 500 }}>{children}</span>
+    );
+
+    /* ============================================================
+       Inline icons (24x24 stroke-based, no lucide)
+       ============================================================ */
+    const Icon = ({ children, className = "" }) => (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24" height="24" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round"
+        className={className}
+        aria-hidden="true"
+      >
+        {children}
+      </svg>
+    );
+    const BarChartIcon    = (p) => <Icon {...p}><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></Icon>;
+    const ShieldIcon      = (p) => <Icon {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></Icon>;
+    const BellIcon        = (p) => <Icon {...p}><path d="M18 16v-5a6 6 0 1 0-12 0v5l-2 2v1h16v-1z"/><path d="M10 21a2 2 0 0 0 4 0"/></Icon>;
+    const GitCompareIcon  = (p) => <Icon {...p}><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h6a4 4 0 0 1 4 4v6"/><path d="M17 18h-6a4 4 0 0 1-4-4V8"/><polyline points="10 9 7 6 10 3"/><polyline points="14 15 17 18 14 21"/></Icon>;
+    const TrendingUpIcon  = (p) => <Icon {...p}><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></Icon>;
+    const PlayCircleIcon  = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></Icon>;
+    const ServerIcon      = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="7" rx="1"/><rect x="3" y="13" width="18" height="7" rx="1"/><line x1="7" y1="7.5" x2="7.01" y2="7.5"/><line x1="7" y1="16.5" x2="7.01" y2="16.5"/></Icon>;
+    const KeyIcon         = (p) => <Icon {...p}><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M17 6l3 3"/><path d="M19 4l2 2"/></Icon>;
+    const LockIcon        = (p) => <Icon {...p}><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></Icon>;
+    const CheckIcon       = (p) => <Icon {...p}><polyline points="5 12 10 17 19 7"/></Icon>;
+    const XIcon           = (p) => <Icon {...p}><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></Icon>;
+    const MenuIcon        = (p) => <Icon {...p}><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></Icon>;
+    const CloseIcon       = (p) => <Icon {...p}><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></Icon>;
+    const ChevronDownIcon = (p) => <Icon {...p}><polyline points="6 9 12 15 18 9"/></Icon>;
+    const ArrowRightIcon  = (p) => <Icon {...p}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></Icon>;
+    const MailIcon        = (p) => <Icon {...p}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 7 9-7"/></Icon>;
+    const ChatIcon        = (p) => <Icon {...p}><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-7a8 8 0 0 1 8-9h2a8 8 0 0 1 8 5z"/></Icon>;
+    const ExitIcon        = (p) => <Icon {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Icon>;
+    const HelpIcon        = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><path d="M9.5 9.5a2.5 2.5 0 1 1 4 2c-1 .5-1.5 1-1.5 2"/><line x1="12" y1="17" x2="12.01" y2="17"/></Icon>;
+
+    /* ============================================================
+       Navigation (sticky)
+       ============================================================ */
+    const Navigation = () => {
+      const [open, setOpen] = useState(false);
+      const openQuiz = useOpenQuiz();
+      const links = [
+        { href: "#how-it-works", label: "How it works" },
+        { href: "#features",     label: "Features" },
+        { href: "#pricing",      label: "Pricing" },
+        { href: "#faq",          label: "FAQ" },
+      ];
+      const close = () => setOpen(false);
+
+      return (
+        <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-border">
+          <nav className="max-w-screen-2xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+            <a href="#top" className="flex items-center" aria-label="ASA Systems home">
+              <AsaWordmark className="h-7 sm:h-8 w-auto" style={{ filter: 'invert(1) hue-rotate(180deg)' }} />
+            </a>
+
+            <div className="hidden md:flex items-center gap-8">
+              {links.map(l => (
+                <a key={l.href} href={l.href} className="text-sm text-primary/80 hover:text-primary transition-colors">
+                  {l.label}
+                </a>
+              ))}
+            </div>
+
+            <div className="hidden md:flex items-center gap-4">
+              <a href="/login" className="text-sm text-primary/80 hover:text-primary transition-colors">Log in</a>
+              <a
+                href={DEFAULT_CHECKOUT_URL}
+                className="inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold text-sm px-4 py-2 rounded-md transition-colors"
+              >
+                Start My Free Trial
+              </a>
+            </div>
+
+            <button
+              className="md:hidden -mr-2 p-3 min-w-[44px] min-h-[44px] text-primary inline-flex items-center justify-center"
+              aria-label="Open menu"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon />
+            </button>
+          </nav>
+
+          {open && (
+            <div className="fixed inset-0 z-50 bg-bg md:hidden flex flex-col">
+              <div className="h-16 px-6 flex items-center justify-between border-b border-border">
+                <AsaWordmark className="h-8 w-auto" style={{ filter: 'invert(1) hue-rotate(180deg)' }} />
+                <button className="-mr-2 p-3 min-w-[44px] min-h-[44px] text-primary inline-flex items-center justify-center" aria-label="Close menu" onClick={close}>
+                  <CloseIcon />
+                </button>
+              </div>
+              <div className="flex-1 px-6 py-10 flex flex-col gap-6">
+                {links.map(l => (
+                  <a
+                    key={l.href}
+                    href={l.href}
+                    onClick={close}
+                    className="text-2xl font-semibold text-primary"
+                  >
+                    {l.label}
+                  </a>
+                ))}
+                <div className="mt-auto flex flex-col gap-3 pt-10">
+                  <a href="/login" onClick={close} className="text-center border border-border text-primary font-semibold py-3 rounded-md">Log in</a>
+                  <a href={DEFAULT_CHECKOUT_URL} onClick={close} className="text-center bg-accent text-bg font-semibold py-3 rounded-md">
+                    Start My Free Trial
+                  </a>
+                  <button
+                    onClick={() => { close(); openQuiz(); }}
+                    className="text-center text-sm text-accent font-semibold underline underline-offset-4"
+                  >
+                    Not sure which plan? Take the 60-second quiz →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </header>
+      );
+    };
+
+    /* ============================================================
+       Hero — full-width product screenshot with subtle float anim.
+       ============================================================ */
+    const Hero = () => {
+      const openQuiz = useOpenQuiz();
+      return (
+        <section id="top" className="border-b border-border md:flex md:items-center md:min-h-[calc(100vh-64px)] overflow-hidden">
+          <div className="w-full max-w-full mx-auto px-12 md:px-16 pt-6 md:pt-7 pb-6 md:pb-7">
+            <div className="grid md:grid-cols-[1fr_1.05fr] gap-[40px] lg:gap-[56px] items-center">
+
+              {/* Left — copy + CTAs */}
+              <div className="w-full relative">
+                {/* Hand-drawn annotation pointing back at the H1.
+                    Lives inside the left col so it tracks the H1's vertical
+                    position (items-center centers both cols together). */}
+                <div
+                  className="hidden md:block absolute z-20 pointer-events-none select-none"
+                  style={{ top: '-40px', right: '-260px' }}
+                  aria-hidden="true"
+                >
+                  <svg width="400" height="220" viewBox="0 0 400 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <text x="180" y="32" fontFamily="Caveat, cursive" fontSize="28" fill="#374151" fontWeight="600">and which are</text>
+                    <text x="180" y="68" fontFamily="Caveat, cursive" fontSize="28" fill="#374151" fontWeight="600">draining your account</text>
+                    {/* Long wobbly sketch arrow curving from below the text down-left toward the H1 */}
+                    <path
+                      d="M 190 90 C 152 110 122 128 100 142 S 60 168 30 198"
+                      stroke="#374151"
+                      strokeWidth="2.2"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    {/* Arrowhead V at (30, 198), opening up-right */}
+                    <path
+                      d="M 30 198 L 52 192 M 30 198 L 40 176"
+                      stroke="#374151"
+                      strokeWidth="2.2"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <p className="text-xs font-bold text-muted tracking-[0.22em] uppercase mb-3">
+                  Windows · MetaTrader 5 · Telegram + Discord
+                </p>
+                <h1 className="h1-hero font-bold text-primary">
+                  Know exactly which signal channels are <SI><span className="text-accent">making you money</span></SI>
+                </h1>
+                <p className="mt-4 text-base md:text-lg text-primary/70 leading-relaxed">
+                  ASA Terminal auto-copies Telegram and Discord signals to MT5, then shows you — with real data — which providers are growing your account and which are draining it.
+                </p>
+                <p className="mt-2 text-sm md:text-base text-accent font-semibold">
+                  Stop guessing which signals work.
+                </p>
+
+                <div className="mt-5 flex flex-col sm:flex-row gap-3">
+                  <a
+                    href={DEFAULT_CHECKOUT_URL}
+                    className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-bold px-7 py-3 rounded-xl transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]"
+                  >
+                    Start My Free Trial
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </a>
+                  <a
+                    href="#how-it-works"
+                    className="inline-flex items-center justify-center gap-2 border border-border hover:border-primary/40 text-primary font-semibold px-6 py-3 rounded-md transition-colors"
+                  >
+                    See it in action →
+                  </a>
+                </div>
+
+                <p className="mt-3 text-xs text-muted/80">
+                  No card required · Any MT5 broker · 5-minute setup · 14-day trial
+                </p>
+                <p className="mt-1.5 text-xs text-muted/70">
+                  MT5 credentials encrypted locally — never transmitted to our servers.
+                </p>
+
+                {/* Social proof strip */}
+                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-primary/65">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="text-accent" aria-hidden="true">★★★★★</span>
+                    <span className="font-semibold text-primary">Built for serious traders</span>
+                  </span>
+                  <span className="text-border hidden sm:inline">|</span>
+                  <span><span className="text-accent font-bold tabular-nums">&lt;20ms</span> execution</span>
+                  <span className="text-border hidden sm:inline">|</span>
+                  <span><span className="text-accent font-bold">Pre-checked</span> prop-firm rules</span>
+                  <span className="text-border hidden sm:inline">|</span>
+                  <span><span className="text-accent font-bold tabular-nums">90-day</span> back-attribution</span>
+                </div>
+              </div>
+
+              {/* Right — real dashboard screenshot */}
+              <div className="relative">
+                <div
+                  className="hero-screenshot rounded-2xl overflow-hidden border border-border shadow-2xl shadow-gray-900/40 ring-1 ring-black/[0.06] group cursor-default"
+                  style={{ willChange: 'transform' }}
+                >
+                  {/* Source image is 1911x939 — explicit width/height matches actual pixels for accurate aspect-ratio reservation (avoid CLS). */}
+                  <img
+                    src="assets/hero-dashboard-full.png"
+                    alt="ASA Terminal — live dashboard showing £2226.40 balance, +£356.06 day P&L, 87% win rate"
+                    className="w-full block transition-transform duration-500 group-hover:scale-[1.015]"
+                    width="1911"
+                    height="939"
+                    loading="eager"
+                    decoding="async"
+                    style={{ imageRendering: '-webkit-optimize-contrast', WebkitFontSmoothing: 'antialiased' }}
+                  />
+                  {/* ASA wordmark over in-app Tradespace sidebar logo */}
+                  <div className="hero-logo-overlay" aria-hidden="true">
+                    <img src="branding/wordmark-header-on-light.png" alt="" />
+                  </div>
+                  {/* Subtle shine overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl" />
+                </div>
+                {/* Floating badge */}
+                <div className="absolute -bottom-4 -left-4 bg-surface border border-border rounded-xl px-4 py-3 shadow-lg hidden md:flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center text-accent shrink-0">
+                    <TrendingUpIcon className="w-4 h-4" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold text-primary">+22.6R this quarter</p>
+                    <p className="text-[10px] text-muted">3 channels kept · 4 cut</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Stat band — bigger numbers, divided cards on desktop
+       ============================================================ */
+    const StatBand = () => {
+      const stats = [
+        { num: 20,  numSuffix: "ms", unit: "execution.",  s: "Faster than you finish reading the Telegram message." },
+        { num: 0,   numSuffix: "",   unit: "Pre-checked.", s: "Every trade validated against your prop firm's rules before it fires." },
+        { num: 90,  numSuffix: "",   unit: "days back.",  s: "Your last quarter, broken down in under 60 seconds." },
+        { num: 100, numSuffix: "%",  unit: "local.",      s: "Your MT5 credentials never leave your machine." },
+      ];
+      return (
+        <section className="border-b border-border bg-surface">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border rounded-xl overflow-hidden">
+              {stats.map((s) => (
+                <div key={s.unit} className="bg-surface p-5 sm:p-8 lg:p-10 min-w-0">
+                  <div className="font-bold tracking-tight leading-[1.05] break-words tabular-nums" style={{ fontSize: 'clamp(1.5rem, 2.6vw, 2.5rem)' }}>
+                    {s.num ? <><span className="text-accent"><CountUp end={s.num} suffix={s.numSuffix} /></span>{' '}</> : null}
+                    <span className="text-primary">{s.unit}</span>
+                  </div>
+                  <div className="mt-3 text-sm sm:text-base text-muted leading-snug break-words">
+                    {s.s}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Every fill tagged to its source. — attribution proof band.
+       Real screenshot of one attributed trade row from the app:
+       channel → signal → execution → result. The visual is the
+       point: every execution links back to the channel that
+       triggered it.
+       ============================================================ */
+    const EveryFillTagged = () => {
+      return (
+        <section className="border-b border-border bg-surface-2">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="max-w-3xl">
+              <h2 className="h2-fluid font-bold text-primary tracking-tighter2">
+                Every fill <SI>tagged</SI> to its source.
+              </h2>
+              <p className="mt-5 text-base md:text-lg text-muted max-w-2xl leading-relaxed">
+                Not just copied — attributed. Every trade links back to the provider that triggered it.
+              </p>
+            </div>
+
+            <div className="mt-10 md:mt-12 max-w-full pointer-events-none">
+              <TradeTableMock />
+            </div>
+            <p className="mt-5 text-xs text-muted">
+              Every fill on your MT5 account is matched back to the channel that fired the signal — even when you modify SL/TP or close manually.
+            </p>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Three positive. Four negative. — editorial verdict band.
+       Seven thin horizontal bars: first three green (winners),
+       last four muted red (losers). The visual is the message —
+       a glance tells you what a leaderboard looks like, and the
+       copy lands the "do you know which is which?" question.
+       ============================================================ */
+    const ThreePositive = () => {
+      const openWaitlist = useOpenWaitlist();
+      const bars = [
+        { name: "Provider A", good: true,  w: 92, val: "+12.4R" },
+        { name: "Provider B", good: true,  w: 76, val: "+7.8R" },
+        { name: "Provider C", good: true,  w: 58, val: "+2.4R" },
+        { name: "Provider D", good: false, w: 42, val: "−1.8R" },
+        { name: "Provider E", good: false, w: 32, val: "−3.2R" },
+        { name: "Provider F", good: false, w: 22, val: "−4.1R" },
+        { name: "Provider G", good: false, w: 14, val: "−1.9R" },
+      ];
+      return (
+        <section className="reveal border-b border-border">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-16 md:py-20">
+            <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+              {/* Left: editorial */}
+              <div>
+                <h2 className="h2-fluid font-bold tracking-tighter2 leading-[1.05]">
+                  <span className="text-accent"><SI>Three positive.</SI></span><br />
+                  <span className="text-warn"><SI>Four negative.</SI></span>
+                </h2>
+                <p className="mt-4 text-base text-muted">
+                  One of them you can measure.
+                </p>
+                <p className="mt-6 text-lg md:text-xl text-primary/85 leading-relaxed max-w-xl">
+                  Your leaderboard tells you which channels are growing your account and which are draining it. Most traders never know. ASA shows you in the first session.
+                </p>
+                <button
+                  onClick={() => openWaitlist("Pro")}
+                  className="mt-7 inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-bg font-bold px-7 py-3.5 rounded-md transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]"
+                >
+                  See your own leaderboard. Start My Free Trial
+                  <ArrowRightIcon className="w-4 h-4" />
+                </button>
+              </div>
+              {/* Right: bar chart hero + stat cards stacked below */}
+              <div>
+                <p className="text-xs font-bold tracking-[0.18em] uppercase text-muted mb-3">Your Leaderboard</p>
+                <div className="border border-border bg-surface rounded-xl p-6 md:p-7">
+                  <div className="flex flex-col gap-3.5">
+                    {bars.map((b) => (
+                      <div key={b.name} className="flex items-center gap-3">
+                        <span className="text-xs font-semibold text-primary/70 w-[88px] shrink-0">{b.name}</span>
+                        <div className="flex-1 h-3 bg-surface-2 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${b.good ? 'bg-accent' : 'bg-warn/35'}`}
+                            style={{ width: `${b.w}%` }}
+                          />
+                        </div>
+                        <span className={`text-xs font-bold tabular-nums w-14 text-right ${b.good ? 'text-accent' : 'text-warn/70'}`}>{b.val}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-col gap-2">
+                  {[
+                    { label: "Profitable channels", val: "+22.6R", color: "text-accent" },
+                    { label: "Losing channels", val: "−11.0R", color: "text-warn" },
+                    { label: "Net gain on 90 days", val: "+11.6R", color: "text-primary" },
+                  ].map(({ label, val, color }) => (
+                    <div key={label} className="border border-border bg-surface rounded-xl px-5 py-3.5 flex items-center justify-between">
+                      <span className="text-sm text-muted">{label}</span>
+                      <span className={`text-lg font-bold tabular-nums ${color}`}>{val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Problem / Solution — subtle bg tint per column
+       ============================================================ */
+    const ProblemSolution = () => {
+      const oldWay = [
+        "Following 5 signal channels, no idea which is profitable",
+        "Manually copying trades when you’re awake, missing them when you’re not",
+        "£200+/month on signal subscriptions with no way to track ROI per channel",
+        "Losing a prop firm account to one bad signal during drawdown",
+        "No way to compare your modified-SL trades vs the channel’s untouched results",
+      ];
+      const newWay = [
+        "See exactly which providers are profitable over 30 and 90 days",
+        "Automated execution 24/7 with prop-firm rules pre-checked before every trade",
+        "Mute bad providers in one click; double-allocate to winners",
+        "Anomaly alerts when a previously good channel turns bad",
+        "Honest split of “your modified trades” vs “the channel’s untouched signals”",
+      ];
+      return (
+        <section className="border-b border-border">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="max-w-3xl mb-14">
+              <p className="text-xs font-semibold text-muted tracking-widest uppercase">The contrast</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary">Two ways to follow signals. One of them you can <SI>measure.</SI></h2>
+            </div>
+            <div className="grid lg:grid-cols-2 gap-6">
+              <div className="border border-warn/20 bg-warn/[0.04] rounded-xl p-8 md:p-10">
+                <p className="text-xs font-semibold text-warn tracking-widest uppercase">The old way</p>
+                <h3 className="mt-3 text-2xl md:text-3xl font-bold text-primary">The old way of following signals</h3>
+                <ul className="mt-8 space-y-5">
+                  {oldWay.map((t, i) => (
+                    <li key={i} className="flex gap-4 border-l-2 border-warn/60 pl-4">
+                      <XIcon className="w-5 h-5 mt-0.5 text-warn shrink-0" />
+                      <span className="text-primary/85 leading-relaxed">{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="border border-accent/30 bg-accent/[0.04] rounded-xl p-8 md:p-10">
+                <p className="text-xs font-semibold text-accent tracking-widest uppercase">With ASA Systems</p>
+                <h3 className="mt-3 text-2xl md:text-3xl font-bold text-primary">With ASA Systems</h3>
+                <ul className="mt-8 space-y-5">
+                  {newWay.map((t, i) => (
+                    <li key={i} className="flex gap-4 border-l-2 border-accent pl-4">
+                      <CheckIcon className="w-5 h-5 mt-0.5 text-accent shrink-0" />
+                      <span className="text-primary/90 leading-relaxed">{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       How it works — three steps. Steps 01 and 02 are compact
+       editorial cards (no fake screenshots). Step 03 is the climax:
+       headline → explanation → real leaderboard screenshot → CTA,
+       stacked and centred so the screenshot reads as the payoff.
+       ============================================================ */
+
+    /* ============================================================
+       Pain Points — "you already know this pain"
+       ============================================================ */
+    const PainPoints = () => {
+      const pains = [
+        {
+          icon: BarChartIcon,
+          title: "Every channel claims to be profitable",
+          body: "You can't reliably test a signal provider until after you've copied them for a month and paid the subscription fee. By then the damage is done.",
+        },
+        {
+          icon: ShieldIcon,
+          title: "One bad signal can blow your prop account",
+          body: "FTMO has zero tolerance for rule violations. A single oversized position from a rogue signal channel can cost you the challenge fee you paid.",
+        },
+        {
+          icon: BellIcon,
+          title: "Manual copying is a full-time job",
+          body: "Watching Telegram, calculating position sizes, adjusting for your account balance, hitting trade on MT5 — by the time you've done all that, the entry's gone.",
+        },
+      ];
+      return (
+        <section className="reveal border-b border-border bg-pain">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="max-w-3xl">
+              <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'var(--warn, #dc2626)' }}>The signal copier problem</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary tracking-tighter2">
+                If you copy trades from Telegram or Discord, <SI>you already know this pain.</SI>
+              </h2>
+            </div>
+            <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-5">
+              {pains.map(({ icon: I, title, body }) => (
+                <div key={title} className="feature-card relative border border-border bg-surface rounded-xl p-7 flex flex-col">
+                  <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(220,38,38,0.5), transparent)' }}></div>
+                  <div className="w-11 h-11 rounded-md flex items-center justify-center" style={{ border: '1px solid rgba(220,38,38,0.3)', backgroundColor: 'rgba(220,38,38,0.1)', color: 'var(--warn, #dc2626)' }}>
+                    <I />
+                  </div>
+                  <h3 className="mt-6 text-lg font-bold text-primary leading-snug">{title}</h3>
+                  <p className="mt-3 text-sm text-primary/75 leading-relaxed">{body}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-12 max-w-2xl text-base md:text-lg text-primary/80 leading-relaxed">
+              ASA Terminal solves all three. <span className="text-primary font-semibold">Auto-execution on MT5</span>, <span className="text-primary font-semibold">prop-firm rules pre-checked before every trade</span>, and a real leaderboard in your <span className="text-accent font-semibold">first session</span>.
+            </p>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Prop Trader Mode — explicit prop firm targeting
+       ============================================================ */
+    const PropTraderMode = () => {
+      const firms = [
+        "FTMO", "The5ers", "FundedNext", "MyForexFunds", "E8 Funding",
+        "Funded Engineer", "Apex Trader Funding", "True Forex Funds",
+        "City Traders Imperium", "TopStep", "Lux Trading Firm", "Funder Pro",
+      ];
+      return (
+        <section className="reveal border-b border-border bg-prop">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+              <div className="lg:col-span-6">
+                <p className="text-xs font-semibold text-accent tracking-widest uppercase">For prop firm traders</p>
+                <h2 className="mt-2 h2-fluid font-bold text-primary tracking-tighter2">
+                  Your prop firm's rules, <SI>enforced before every trade.</SI>
+                </h2>
+                <p className="mt-6 text-lg text-primary/80 max-w-xl leading-relaxed">
+                  ASA Terminal ships with <span className="text-primary font-semibold">13 pre-loaded prop firm rule sets</span> — FTMO, The5ers, FundedNext, MyForexFunds, and nine more.
+                </p>
+                <ul className="mt-7 space-y-4 max-w-xl">
+                  <li className="flex gap-3">
+                    <CheckIcon className="w-5 h-5 mt-0.5 text-accent shrink-0" />
+                    <span className="text-primary/85 leading-relaxed">Every trade is checked against your firm's drawdown limits, position size caps, and trading hour restrictions <span className="text-primary font-semibold">before execution</span>.</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <CheckIcon className="w-5 h-5 mt-0.5 text-accent shrink-0" />
+                    <span className="text-primary/85 leading-relaxed">Never lose a prop account to a signal channel that doesn't follow the rules.</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <CheckIcon className="w-5 h-5 mt-0.5 text-accent shrink-0" />
+                    <span className="text-primary/85 leading-relaxed">Stealth mode hides automation signatures from broker detection — your prop firm sees a clean account.</span>
+                  </li>
+                </ul>
+                <div className="mt-9 flex flex-col sm:flex-row gap-3">
+                  <a href={DEFAULT_CHECKOUT_URL} className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3 rounded-md transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]">
+                    Start My Free Trial
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </a>
+                  <a href="#features" className="inline-flex items-center justify-center gap-2 border border-border hover:border-primary/40 text-primary font-semibold px-6 py-3 rounded-md transition-colors">
+                    See all features
+                  </a>
+                </div>
+                <p className="mt-3 text-xs text-muted/90">MT5 credentials encrypted locally — never transmitted to our servers.</p>
+              </div>
+              <div className="lg:col-span-6">
+                <div className="border border-border bg-surface rounded-2xl p-7 md:p-8 shadow-xl shadow-gray-200/60">
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-muted">Prop firm presets · pre-loaded</span>
+                    <span className="text-[10px] font-bold tabular-nums text-accent">13</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {firms.map((f) => (
+                      <span key={f} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary/85 border border-border bg-bg rounded-full px-3 py-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                        {f}
+                      </span>
+                    ))}
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted border border-dashed border-border rounded-full px-3 py-1.5">+ generic configurable</span>
+                  </div>
+                  <div className="mt-7 pt-5 border-t border-border grid grid-cols-3 gap-3 text-center">
+                    <div><div className="text-2xl font-bold text-accent tabular-nums">13</div><div className="mt-1 text-[10px] tracking-widest uppercase text-muted">Presets</div></div>
+                    <div><div className="text-2xl font-bold text-accent tabular-nums">0</div><div className="mt-1 text-[10px] tracking-widest uppercase text-muted">Rule violations</div></div>
+                    <div><div className="text-2xl font-bold text-accent tabular-nums">&lt; 20ms</div><div className="mt-1 text-[10px] tracking-widest uppercase text-muted">Pre-trade check</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    const HowItWorks = () => {
+      const openWaitlist = useOpenWaitlist();
+      const setupSteps = [
+        {
+          n: "01",
+          title: "Connect your channels",
+          desc: "Paste your Telegram and Discord channels. ASA listens in real-time and parses signals with AI — using your own API key (so you control the cost).",
+          badge: "5 minutes",
+          highlights: ["Telegram + Discord", "AI parsing", "Bring your own AI key"],
+        },
+        {
+          n: "02",
+          title: "Link MetaTrader 5",
+          desc: "Connect your MT5 account once. ASA copies signals automatically using your risk settings and prop-firm rules. Five trade modes for different setups.",
+          badge: "2 minutes",
+          highlights: ["One-time MT5 link", "Prop-firm rules pre-checked", "Stealth mode optional"],
+        },
+      ];
+      return (
+        <section id="how-it-works" className="border-b border-border">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="max-w-3xl">
+              <p className="text-xs font-bold tracking-[0.18em] uppercase text-muted mb-2">How It Works</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary">From zero to a working leaderboard in ten minutes.</h2>
+            </div>
+
+            {/* Steps 01 + 02 — compact side-by-side setup cards */}
+            <div className="mt-16 grid md:grid-cols-2 gap-4">
+              {setupSteps.map((s) => (
+                <div
+                  key={s.n}
+                  className="reveal border border-border bg-surface rounded-xl p-7 md:p-9 flex flex-col"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center justify-center rounded-full border border-accent text-accent text-xs font-bold px-3 py-0.5">
+                      Step {parseInt(s.n, 10)}
+                    </span>
+                    <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-accent border border-accent/40 rounded-md px-3 py-1.5">
+                      {s.badge}
+                    </span>
+                  </div>
+                  <h3 className="mt-6 text-2xl md:text-[28px] font-bold text-primary">{s.title}</h3>
+                  <p className="mt-3 text-primary/80 leading-relaxed">{s.desc}</p>
+                  <ul className="mt-6 space-y-2.5">
+                    {s.highlights.map((h) => (
+                      <li key={h} className="flex items-start gap-3 text-sm text-primary/85">
+                        <CheckIcon className="w-4 h-4 mt-0.5 text-accent shrink-0" />
+                        <span>{h}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            {/* Step 03 — the payoff. Two-column, screenshot and text vertically centred. */}
+            <div className="reveal mt-16 md:mt-20 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
+              <div>
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center justify-center rounded-full border border-accent text-accent text-xs font-bold px-3 py-0.5">
+                    Step 3
+                  </span>
+                  <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-accent border border-accent/40 rounded-md px-3 py-1.5">
+                    Instant
+                  </span>
+                </div>
+                <h3 className="mt-5 text-3xl md:text-4xl font-bold text-primary tracking-tighter2">
+                  See what’s <SI>actually</SI> profitable.
+                </h3>
+                <p className="mt-4 text-base md:text-lg text-primary/80 leading-relaxed">
+                  Within 60 seconds, ASA pulls your last 90 days of MT5 trades and matches each one to the signal channel that fired it. You get a populated leaderboard immediately — not after waiting a month.
+                </p>
+                <button
+                  onClick={() => openWaitlist("Pro")}
+                  className="mt-7 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-7 py-3.5 rounded-md transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto"
+                >
+                  See your own leaderboard. Start My Free Trial
+                  <ArrowRightIcon className="w-4 h-4" />
+                </button>
+                <p className="mt-3 text-xs text-muted">
+                  14-day trial · Cancel anytime
+                </p>
+              </div>
+
+              <div className="max-w-full pointer-events-none">
+                <TradeHistoryMock />
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Features — subtle hover border lift
+       ============================================================ */
+    const Features = () => {
+      const features = [
+        { icon: BarChartIcon,   name: "Per-provider attribution",     desc: "Sharpe ratio and R-multiple calculated per provider. See who’s actually adding edge, not just occasional wins." },
+        { icon: ShieldIcon,     name: "Prop-firm rule enforcement",   desc: "Drawdown limits, position caps, and trading hours checked before every trade fires. Pre-loaded rule sets for the major firms." },
+        { icon: BellIcon,       name: "Anomaly detection",            desc: "Real-time alerts on win-rate drop, profit factor collapse, and consecutive losses. Know when a channel goes bad before it costs you." },
+        { icon: GitCompareIcon, name: "Your trades vs the raw signal", desc: "Compare your adjusted exits against the channel's untouched signals. See whether your edits are adding or costing money." },
+        { icon: TrendingUpIcon, name: "Equity curve per provider",    desc: "Downsampled equity curve for each signal source. Visual trend before you re-allocate capital." },
+        { icon: PlayCircleIcon, name: "Trade replay",                 desc: "Step through historical trades with best-exit analysis. Understand your actual execution quality." },
+      ];
+      return (
+        <section id="features" className="reveal border-b border-border">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="max-w-3xl">
+              <p className="text-xs font-semibold text-muted tracking-widest uppercase">Features</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary">Built for traders who measure.</h2>
+              <p className="mt-6 text-lg text-primary/80 max-w-2xl">Six things you won’t get from a generic copier — and the reason you’d switch.</p>
+            </div>
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {features.map(({ icon: I, name, desc }) => (
+                <div key={name} className="feature-card border border-border bg-surface rounded-xl p-7 flex flex-col">
+                  <div className="w-11 h-11 rounded-md border border-accent/30 bg-accent/10 flex items-center justify-center text-accent">
+                    <I />
+                  </div>
+                  <h3 className="mt-6 text-lg font-bold text-primary">{name}</h3>
+                  <p className="mt-2 text-sm text-primary/75 leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Comparison — REAL competitors, verified data per Chris's
+       confirmed spec (May 2026). Only tick what's actually true.
+
+       Columns: ASA · TSC · TSCopier · TelegramFxCopier · Copygram
+       URLs confirmed by Chris.
+
+       Honesty notes baked into the table:
+         · TSC genuinely has OpenAI Vision image parsing — give it
+           a tick on AI parsing (don't pretend otherwise).
+         · ASA is MT5-only — competitors get the tick on MT4.
+         · TelegramFxCopier carries a hidden +$50/mo MetaAPI cost
+           that the user only discovers post-purchase.
+         · No fake claims for features ASA doesn't ship yet
+           (no R:R ruler, no hidden SL/TP, no image parsing).
+         · "No-VPS" row is deliberately omitted — ASA needs a
+           Windows VPS for 24/7, so highlighting it would lose
+           the comparison.
+
+       Pending Window gets visual emphasis (accent-tinted row +
+       "★ Unique to ASA" pill) because it's the #1 pain point in
+       every competitor's reviews: provider posts "BUY GOLD",
+       SL/TP arrives 30 seconds later, every competitor executes
+       immediately with no stop loss. ASA buffers the signal
+       until SL/TP arrives, then executes complete.
+       ============================================================ */
+    const Comparison = () => {
+      const openQuiz = useOpenQuiz();
+      const cols = [
+        { name: "ASA Systems",      sub: "May 2026",            href: null,                              isAsa: true  },
+        { name: "TSC",              sub: "Market leader",       href: "https://www.telegramcopier.com",  isAsa: false },
+        { name: "TSCopier",         sub: "Cleanest alternative",href: "https://www.tscopier.com",        isAsa: false },
+        { name: "TelegramFxCopier", sub: "Cloud-based",         href: "https://telegramfxcopier.com",    isAsa: false },
+        { name: "Copygram",         sub: "Cloud-based",         href: "https://copygram.io",             isAsa: false },
+      ];
+
+      const Y = () => <CheckIcon className="w-5 h-5 text-accent mx-auto" />;
+      const N = () => <XIcon className="w-5 h-5 text-warn/80 mx-auto" />;
+      const txt = (s, tone) => {
+        const cls = tone === 'asa'   ? 'text-primary text-xs font-semibold'
+                   : tone === 'warn' ? 'text-warn text-[11px] font-semibold leading-snug'
+                   : tone === 'dim'  ? 'text-primary/70 text-[11px] leading-snug'
+                   : tone === 'ok'   ? 'text-primary/85 text-[11px] leading-snug'
+                   :                   'text-primary/80 text-[11px] leading-snug';
+        return <span className={cls}>{s}</span>;
+      };
+
+      // Rows are grouped: table-stakes (everyone ticks) → mixed
+      // (honest competitor wins surface here) → ASA-only differentiators.
+      // The early all-green band reassures the reader the table isn't
+      // rigged, so the differentiator band at the bottom lands harder.
+      // `groupStart` marks the first row of a group and gets a thicker
+      // top border.
+      const rows = [
+        // ── Table stakes — every product on the page does these.
+        { label: "Telegram signal parsing",            cells: [<Y/>, <Y/>, <Y/>, <Y/>, <Y/>] },
+        { label: "MT5 support",                        cells: [<Y/>, <Y/>, <Y/>, <Y/>, <Y/>] },
+        { label: "Risk % per trade settings",          cells: [<Y/>, <Y/>, <Y/>, <Y/>, <Y/>] },
+        { label: "Stop loss / take profit control",    cells: [<Y/>, <Y/>, <Y/>, <Y/>, <Y/>] },
+        { label: "Multiple signal channels",           cells: [<Y/>, <Y/>, <Y/>, <Y/>, <Y/>] },
+        { label: "Signal filtering / channel muting",  cells: [<Y/>, <Y/>, <Y/>, <Y/>, <Y/>] },
+        { label: "Execution speed under 100ms",        cells: [<Y/>, <Y/>, <Y/>, <Y/>, <Y/>] },
+
+        // ── Mixed — honest tradeoffs, including where ASA loses.
+        { label: "MT4 support",                        groupStart: true, cells: [<N/>, <Y/>, <Y/>, <Y/>, <Y/>] },
+        { label: "desktop dashboard",                cells: [<Y/>, <N/>, <N/>, <Y/>, <Y/>] },
+        { label: "Cloud execution (no PC needed)",     cells: [<N/>, <N/>, <N/>, <Y/>, <Y/>] },
+        { label: "AI signal parsing",                  cells: [<Y/>, <Y/>, <N/>, <N/>, <N/>] },
+        { label: "Mobile app", titleNote: "coming soon", cells: [<N/>, <N/>, <N/>, <Y/>, <Y/>] },
+
+        // ── ASA-only differentiators — the reason the table exists.
+        { label: "Discord signal copying",           groupStart: true, cells: [<Y/>, <N/>, <N/>, <N/>, <N/>] },
+        { label: "Per-provider P&L attribution",       cells: [<Y/>, <N/>, <N/>, <N/>, <N/>] },
+        {
+          label: "Pending Window (split-signal protection)",
+          highlight: true,
+          cells: [<Y/>, <N/>, <N/>, <N/>, <N/>],
+        },
+        { label: "Prop-firm presets (13)",             cells: [<Y/>, <N/>, <N/>, <N/>, <N/>] },
+        { label: "Sharpe ratio per provider",          cells: [<Y/>, <N/>, <N/>, <N/>, <N/>] },
+        { label: "BYO AI key (Anthropic / Gemini / Groq / Ollama)", cells: [<Y/>, <N/>, <N/>, <N/>, <N/>] },
+
+        // ── Pricing.
+        {
+          label: "Pricing",
+          isPrice: true,
+          groupStart: true,
+          cells: [
+            txt("£19–£59/mo", 'asa'),
+            txt("$9–$15/mo (annual)", 'dim'),
+            txt("~$39/mo", 'dim'),
+            txt("$50+/mo (+ hidden)", 'dim'),
+            txt("$25–$82/mo", 'dim'),
+          ],
+        },
+      ];
+
+      const ExternalIcon = () => (
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M14 3h7v7"/>
+          <path d="M10 14L21 3"/>
+          <path d="M21 14v7H3V3h7"/>
+        </svg>
+      );
+
+      const UniquePill = () => (
+        <span className="ml-2 inline-flex items-center gap-1 text-[9px] font-bold tracking-widest uppercase text-accent border border-accent/40 bg-accent/10 px-1.5 py-0.5 rounded">
+          <span aria-hidden="true">★</span> Unique to ASA
+        </span>
+      );
+
+      return (
+        <section id="compare" className="border-b border-border">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="max-w-3xl">
+              <p className="text-xs font-semibold text-muted tracking-widest uppercase">Compare</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary"><SI>Honest</SI> comparison with the four products you’re probably evaluating.</h2>
+              <p className="mt-6 text-lg text-primary/80 max-w-2xl leading-relaxed">
+                Read the rows where every competitor has a tick — that’s a level playing field. Read the rows where only one column has a tick — that’s a real difference. We won’t pretend ASA does things it doesn’t.
+              </p>
+            </div>
+
+            <div className="mt-12 -mx-6 px-6 overflow-x-auto no-scrollbar">
+              <table className="min-w-[920px] w-full text-sm border-collapse">
+                <thead>
+                  <tr>
+                    <th className="text-left pb-5 align-bottom w-[28%]"></th>
+                    {cols.map((c) => (
+                      <th key={c.name} className="pb-5 align-bottom px-2">
+                        <div className="flex flex-col items-center gap-1">
+                          {c.isAsa ? (
+                            <span className="text-accent text-[11px] uppercase tracking-widest font-bold">{c.name}</span>
+                          ) : (
+                            <a
+                              href={c.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary/70 hover:text-primary text-[11px] uppercase tracking-widest font-semibold inline-flex items-center gap-1 transition-colors"
+                            >
+                              {c.name}
+                              <ExternalIcon />
+                            </a>
+                          )}
+                          <span className={`text-[10px] tracking-wide ${c.isAsa ? 'text-accent/80' : 'text-muted'}`}>{c.sub}</span>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, ri) => {
+                    const isFirst = ri === 0;
+                    const isLast  = ri === rows.length - 1;
+                    return (
+                      <tr
+                        key={r.label}
+                        className={`${r.groupStart ? 'border-t-2 border-border/80' : 'border-t border-border'} ${r.highlight ? 'bg-accent/[0.06]' : ''}`}
+                      >
+                        <td className={`py-4 pr-6 text-sm ${r.isPrice ? 'text-primary font-semibold' : 'text-primary/85'}`}>
+                          <span className="inline-flex items-center flex-wrap gap-x-1.5">
+                            <span>{r.label}</span>
+                            {r.titleNote && (
+                              <span className="relative group/tn cursor-default select-none">
+                                <span className="text-[10px] text-muted/60 font-medium">ⓘ</span>
+                                <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-0.5 bg-primary text-bg text-[10px] font-medium rounded whitespace-nowrap opacity-0 group-hover/tn:opacity-100 transition-opacity duration-150 z-20 shadow-md capitalize">
+                                  {r.titleNote}
+                                </span>
+                              </span>
+                            )}
+                            {r.highlight && <UniquePill />}
+                          </span>
+                        </td>
+                        {r.cells.map((cell, ci) => {
+                          const isAsa = ci === 0;
+                          const classes = [
+                            'py-4 px-2 text-center align-middle',
+                            isAsa ? 'border-x border-accent/50 bg-accent/[0.06]' : '',
+                            isAsa && isFirst ? 'border-t border-accent/50' : '',
+                            isAsa && isLast  ? 'border-b border-accent/50' : '',
+                          ].join(' ');
+                          return <td key={ci} className={classes}>{cell}</td>;
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pending Window explainer — the #1 reason this table matters */}
+            <div className="mt-10 border border-accent/30 bg-accent/[0.05] rounded-xl p-6 md:p-7 max-w-3xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-md border border-accent/40 bg-accent/15 flex items-center justify-center text-accent shrink-0">
+                  <ShieldIcon className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold tracking-widest uppercase text-accent">Why the Pending Window row matters</p>
+                  <p className="mt-2 text-sm md:text-base text-primary/90 leading-relaxed">
+                    A provider posts <span className="text-primary font-semibold">“BUY GOLD”</span> in Telegram. The SL and TP arrive in a follow-up edit thirty seconds later. Every other copier in this table executes the first message immediately — with <span className="text-warn font-semibold">no stop loss attached</span>. ASA buffers the trade until the stop is confirmed, then opens the position complete. This is the #1 complaint across reviews of every competitor on this page.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-8 text-xs text-muted max-w-3xl leading-relaxed">
+              Data sourced from publicly available product pages. Accurate as of May 2026. Corrections welcome — email <a href="mailto:christoffermoshiri@gmail.com" className="text-primary/80 hover:text-primary underline underline-offset-2 decoration-border hover:decoration-accent">christoffermoshiri@gmail.com</a>.
+            </p>
+
+            <div className="mt-10 flex flex-col sm:flex-row gap-3">
+              <a
+                href={DEFAULT_CHECKOUT_URL}
+                className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3 rounded-md transition-colors w-full sm:w-auto"
+              >
+                Start My Free Trial
+                <ArrowRightIcon className="w-4 h-4" />
+              </a>
+              <a
+                href="#pricing"
+                className="inline-flex items-center justify-center gap-2 border border-border hover:border-primary/40 text-primary font-semibold px-6 py-3 rounded-md transition-colors w-full sm:w-auto"
+              >
+                See pricing
+              </a>
+            </div>
+            <p className="mt-5 text-sm">
+              <button
+                onClick={openQuiz}
+                className="text-accent hover:text-accent/80 font-semibold border-b border-accent/40 hover:border-accent transition-colors inline-flex items-center gap-1.5"
+              >
+                Which plan is right for me?
+                <ArrowRightIcon className="w-3.5 h-3.5" />
+              </button>
+            </p>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Security & Trust — accent top line per card
+       ============================================================ */
+    const Security = () => {
+      const cards = [
+        { icon: ServerIcon, title: "Local execution",       desc: "The trading engine runs on your Windows machine. Your MT5 credentials and trading data never touch our servers." },
+        { icon: KeyIcon,    title: "Bring your own AI key", desc: "Anthropic, Gemini, Groq, or local Ollama. You choose the model. You pay the AI provider directly. You set the rules. ASA follows them." },
+        { icon: LockIcon,   title: "GDPR-ready",            desc: "One-click data export. Hard delete on request. Your trading data never touches our servers." },
+        { icon: ExitIcon,   title: "Cancel anytime",        desc: "No lock-in. Cancel through Stripe in one click. Your data export is available any time — we don’t hold your history hostage." },
+      ];
+      return (
+        <section className="border-b border-border">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="max-w-3xl">
+              <p className="text-xs font-semibold text-muted tracking-widest uppercase">Security &amp; trust</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary">You set the rules. ASA follows them.</h2>
+            </div>
+            <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {cards.map(({ icon: I, title, desc }) => (
+                <div key={title} className="security-card relative border border-border bg-surface rounded-xl p-8 overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-70"></div>
+                  <div className="w-11 h-11 rounded-md border border-accent/30 bg-accent/10 flex items-center justify-center text-accent">
+                    <I />
+                  </div>
+                  <h3 className="mt-6 text-lg font-bold text-primary">{title}</h3>
+                  <p className="mt-2 text-sm text-primary/75 leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       WaitlistModal — pre-launch capture; fires before Stripe wired
+       ============================================================ */
+    const WaitlistModal = ({ plan, onClose }) => {
+      const [form, setForm] = useState({ name: '', email: '', phone: '' });
+      const [status, setStatus] = useState('idle'); // idle | loading | success | error
+
+      const update = (k) => (e) => setForm(prev => ({ ...prev, [k]: e.target.value }));
+
+      const submit = async (e) => {
+        e.preventDefault();
+        setStatus('loading');
+        try {
+          const res = await fetch('http://localhost:5000/api/waitlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: form.name, email: form.email, phone: form.phone || undefined, plan, source: 'pricing' }),
+          });
+          setStatus(res.ok ? 'success' : 'error');
+        } catch {
+          setStatus('error');
+        }
+      };
+
+      // Lock body scroll while open
+      React.useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+      }, []);
+
+      return (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+          <div className="relative bg-surface border border-border rounded-2xl p-8 w-full max-w-md shadow-2xl">
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
+              aria-label="Close"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+
+            {status === 'success' ? (
+              <div className="text-center py-6">
+                <div className="w-14 h-14 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center mx-auto mb-5">
+                  <CheckIcon className="w-7 h-7 text-accent" />
+                </div>
+                <h3 className="text-2xl font-bold text-primary">You're on the list.</h3>
+                <p className="mt-3 text-primary/75">We'll email you the moment {plan} early access opens — usually within 24 hours.</p>
+                <button
+                  onClick={onClose}
+                  className="mt-7 inline-flex items-center justify-center bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3 rounded-md transition-colors w-full"
+                >
+                  Got it
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <p className="text-xs font-semibold text-muted tracking-widest uppercase mb-1">{plan} plan</p>
+                  <h3 className="text-2xl font-bold text-primary">Secure your early access spot.</h3>
+                  <p className="mt-2 text-sm text-primary/70">We're in pre-launch. Drop your details and we'll reach out with trial access as soon as your plan is ready.</p>
+                </div>
+                <form onSubmit={submit} className="flex flex-col gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-muted mb-1.5 tracking-wide uppercase">Name *</label>
+                    <input
+                      required
+                      type="text"
+                      value={form.name}
+                      onChange={update('name')}
+                      placeholder="Your name"
+                      className="w-full bg-bg border border-border rounded-md px-4 py-2.5 text-sm text-primary placeholder:text-muted focus:outline-none focus:border-accent/60 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted mb-1.5 tracking-wide uppercase">Email *</label>
+                    <input
+                      required
+                      type="email"
+                      value={form.email}
+                      onChange={update('email')}
+                      placeholder="you@example.com"
+                      className="w-full bg-bg border border-border rounded-md px-4 py-2.5 text-sm text-primary placeholder:text-muted focus:outline-none focus:border-accent/60 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted mb-1.5 tracking-wide uppercase">Phone <span className="normal-case font-normal text-muted/70">(optional — get the MT5 connection guide by SMS)</span></label>
+                    <input
+                      type="tel"
+                      value={form.phone}
+                      onChange={update('phone')}
+                      placeholder="+44 7700 000000"
+                      className="w-full bg-bg border border-border rounded-md px-4 py-2.5 text-sm text-primary placeholder:text-muted focus:outline-none focus:border-accent/60 transition-colors"
+                    />
+                  </div>
+                  {status === 'error' && (
+                    <p className="text-xs text-red-500">Something went wrong — please try again or email us directly.</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    className="mt-2 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 disabled:opacity-60 text-bg font-semibold px-5 py-3.5 rounded-md transition-colors w-full"
+                  >
+                    {status === 'loading' ? 'Sending…' : 'Secure my spot →'}
+                  </button>
+                  <p className="text-center text-[11px] text-muted">No spam. Unsubscribe in one click. We'll respect your inbox. 🙂</p>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    /* ============================================================
+       Pricing — monthly/annual toggle
+       ============================================================ */
+    const Pricing = () => {
+      const openQuiz = useOpenQuiz();
+      const openWaitlist = useOpenWaitlist();
+      const [annual, setAnnual] = useState(false);
+      const tiers = [
+        { name: "Starter", monthly: 19, annual: 171, features: ["1 MT5 account", "3 signal providers", "All core features"], highlight: false, badge: null },
+        { name: "Pro",     monthly: 35, annual: 315, features: ["3 MT5 accounts", "Unlimited providers", "AI parsing", "Stealth mode"], highlight: true,  badge: "Most popular" },
+        { name: "Scale",   monthly: 59, annual: 531, features: ["5 MT5 accounts", "Unlimited providers", "Priority support", "All features"], highlight: false, badge: null },
+      ];
+      return (
+      <>
+        <section id="pricing" data-pricing-mode="waitlist" className="border-b border-border">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="max-w-3xl">
+              <p className="text-xs font-bold tracking-[0.18em] uppercase text-muted mb-2">Pricing</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary">Simple pricing. <SI>No surprises.</SI></h2>
+              <p className="mt-6 text-lg text-primary/80">14-day free trial on every plan. Cancel any time.</p>
+              <div className="mt-6 inline-flex items-start gap-3 border border-accent/30 bg-accent/[0.05] rounded-md px-4 py-3 max-w-xl">
+                <CheckIcon className="w-4 h-4 mt-0.5 text-accent shrink-0" />
+                <p className="text-sm text-primary/85 leading-snug">
+                  All plans start with a 14-day trial. No card stored until you choose to subscribe.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-10 inline-flex items-center gap-1 border border-border rounded-md p-1 bg-surface">
+              <button
+                onClick={() => setAnnual(false)}
+                className={`px-4 py-1.5 text-sm font-semibold rounded transition-colors ${!annual ? 'bg-accent text-bg' : 'text-primary/80 hover:text-primary'}`}
+                aria-pressed={!annual}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setAnnual(true)}
+                className={`px-4 py-1.5 text-sm font-semibold rounded inline-flex items-center gap-2 transition-colors ${annual ? 'bg-accent text-bg' : 'text-primary/80 hover:text-primary'}`}
+                aria-pressed={annual}
+              >
+                Annual
+                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${annual ? 'bg-white/25 text-bg' : 'border border-border text-muted'}`}>Save 25% — 3 months free</span>
+              </button>
+            </div>
+
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {tiers.map((t) => {
+                const price = annual ? Math.round(t.annual / 12) : t.monthly;
+                return (
+                  <div
+                    key={t.name}
+                    className={`rounded-xl p-8 flex flex-col relative ${
+                      t.name === 'Starter'
+                        ? 'bg-gradient-to-br from-white to-zinc-50 border border-zinc-200 hover:-translate-y-1 transition-transform duration-200'
+                        : t.name === 'Pro'
+                          ? 'bg-gradient-to-br from-white via-accent/5 to-accent/12 border border-accent/30 md:scale-[1.04] shadow-[0_0_40px_rgba(55,170,53,0.15)]'
+                          : 'bg-gradient-to-br from-white via-accent/8 to-accent/20 border border-accent/40 shadow-[0_0_50px_rgba(55,170,53,0.2)]'
+                    }`}
+                  >
+                    {t.badge && (
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-bg text-xs font-bold px-3 py-1 rounded-full">
+                        {t.badge}
+                      </span>
+                    )}
+                    <h3 className="text-lg font-bold text-primary">{t.name}</h3>
+                    <div className="mt-6 flex items-baseline gap-1">
+                      <span className={`text-5xl font-bold tracking-tighter2 ${t.name === 'Starter' ? 'text-primary' : 'text-accent'}`}>£{price}</span>
+                      <span className="text-sm text-muted">/mo</span>
+                    </div>
+                    <div className="text-sm mt-1.5 text-muted">
+                      {annual ? `Billed annually at £${t.annual}` : 'Billed monthly'}
+                    </div>
+
+                    <ul className="mt-7 space-y-3">
+                      {t.features.map(f => (
+                        <li key={f} className="flex items-start gap-3 text-sm text-primary/85">
+                          <CheckIcon className="w-4 h-4 mt-0.5 text-accent shrink-0" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button
+                      onClick={() => openWaitlist(t.name)}
+                      className={`mt-10 inline-flex items-center justify-center gap-2 font-semibold px-5 py-3 rounded-md transition-colors w-full ${
+                        t.name === 'Starter'
+                          ? 'border border-zinc-200 hover:border-accent/40 text-primary bg-white'
+                          : 'bg-accent hover:bg-accent/90 text-bg shadow-[0_8px_24px_-8px_rgba(55,170,53,0.6)]'
+                      }`}
+                    >
+                      Start My Free Trial
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="mt-10 text-center text-sm text-muted">
+              All plans include a 14-day free trial. Cancel anytime through Stripe Customer Portal.
+            </p>
+
+            {/* Quiz funnel — secondary entry point right at the decision moment */}
+            <div className="mt-14 border border-border bg-surface rounded-2xl p-7 md:p-9 flex flex-col md:flex-row md:items-center gap-5 shadow-xl shadow-gray-200/50">
+              <div className="w-14 h-14 rounded-2xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent shrink-0 mx-auto md:mx-0">
+                <HelpIcon className="w-6 h-6" />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="text-xl font-bold text-primary">Stuck between plans?</h3>
+                <p className="mt-1.5 text-sm text-primary/75 leading-relaxed max-w-2xl">
+                  Answer 5 quick questions about how you trade. We'll point you at the plan that fits — and the features you'll actually use. Takes 60 seconds.
+                </p>
+              </div>
+              <button
+                onClick={openQuiz}
+                className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3 rounded-md transition-colors shrink-0 shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]"
+              >
+                Take the 60-second quiz
+                <ArrowRightIcon className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </>
+      );
+    };
+
+
+    /* ============================================================
+       FAQ — accordion
+       ============================================================ */
+    const FAQ = () => {
+      const items = [
+        { q: "Is my MT5 password safe?", a: "Your MT5 credentials are encrypted locally using Fernet symmetric encryption and never transmitted. ASA connects to MT5 via the MetaTrader 5 Python bridge on your local machine only — credentials never touch our servers." },
+        { q: "What is ASA Systems?", a: "ASA Systems is a Windows desktop application that connects to your Telegram and Discord signal channels, automatically copies the signals to MetaTrader 5, and tracks which providers are actually profitable using per-provider Sharpe ratio and R-multiple attribution." },
+        { q: "How does signal copying work?", a: "ASA listens to your channels in real-time, parses each signal using a regex engine with AI fallback, and places the trade on MT5 automatically — with your pre-configured risk settings and prop firm rules applied before execution." },
+        { q: "Which brokers are supported?", a: "Any broker that offers MetaTrader 5. We do not support MT4, cTrader, or any other platform at this time. If you need MT4 support, ASA is not the right tool for you yet." },
+        { q: "Which operating systems?", a: "Windows only. macOS and Linux are not supported. If you are on Mac, ASA will not run. We are not making half-promises about future support." },
+        { q: "Do I need to keep my computer on?", a: "Yes. ASA runs locally on your machine. If your computer sleeps or loses internet, signal copying pauses. For 24/7 unattended automation, a Windows VPS (we recommend Contabo or Hetzner) running ASA is the standard setup." },
+        { q: "Why bring your own API key?", a: "Cost transparency and privacy. You pay your AI provider directly at their published rates (typically fractions of a penny per signal parse). Your data goes to the provider you choose, not through our servers. You can also use local Ollama with no external calls at all." },
+        { q: "What prop firm rules does ASA support?", a: "Pre-loaded rule sets for FTMO, FundedNext, MyForexFunds, The5ers, E8 Funding, Funded Engineer, Apex Trader Funding, True Forex Funds, City Traders Imperium, TopStep, Lux Trading Firm, Funder Pro, plus a generic configurable preset." },
+        { q: "What does the 14-day trial include?", a: "Everything. Full access to all features of your chosen plan for 14 days. At the end of the trial, the app switches to read-only mode — you can review your data but cannot place new trades until you subscribe." },
+        { q: "What happens after the trial?", a: "The app enters read-only mode. Your historical data and leaderboard are preserved. You can subscribe at any time to re-enable live trading." },
+        { q: "How do I cancel?", a: "Through the Stripe Customer Portal — one click, no questions asked. Your subscription stops at the end of the billing period. We do not make cancellation difficult." },
+        { q: "Is ASA regulated by the FCA?", a: "No. ASA Systems is software, not a financial service. We do not provide investment advice, manage money, or execute trades on your behalf — you configure the rules, and the software follows them. If you need regulated financial advice, speak to an FCA-authorised adviser." },
+        { q: "What data do you collect?", a: "Anonymised product telemetry (feature usage counts, error rates) — opt-in, disabled by default. No trading data, no credentials, no personal identifiers leave your machine. Full details in our Privacy Policy." },
+        { q: "Does this guarantee profits?", a: "No. Trading CFDs carries substantial risk. ASA is an automation and analytics tool. It does not select signals, manage risk on your behalf, or guarantee any outcome. You remain responsible for every trade." },
+        { q: "Why not Mac, Linux, or MT4?", a: "The MetaTrader 5 Python bridge is Windows-only. There is no MT4 equivalent with the same API depth. These are honest current limitations, not features we are working around. If the platform adds support, we will follow." },
+      ];
+
+      const [open, setOpen] = useState(() => new Set());
+      const toggle = (i) => setOpen(prev => {
+        const next = new Set(prev);
+        if (next.has(i)) next.delete(i); else next.add(i);
+        return next;
+      });
+
+      return (
+        <section id="faq" className="border-b border-border">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24">
+            <div className="max-w-3xl">
+              <p className="text-xs font-bold tracking-[0.18em] uppercase text-muted mb-2">FAQ</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary"><SI>Straight</SI> answers.</h2>
+            </div>
+            <div className="mt-14">
+              {items.map((it, i) => {
+                const isOpen = open.has(i);
+                return (
+                  <div key={i} className={`${i === 0 ? 'border-t border-border' : ''} border-b border-border`}>
+                    <button
+                      onClick={() => toggle(i)}
+                      className="w-full flex items-start justify-between gap-6 py-6 text-left group"
+                      aria-expanded={isOpen}
+                    >
+                      <span className="text-base md:text-lg font-semibold text-primary group-hover:text-accent transition-colors">{it.q}</span>
+                      <span className={`shrink-0 mt-1 text-muted transition-transform duration-200 ${isOpen ? 'rotate-180 text-accent' : ''}`}>
+                        <ChevronDownIcon className="w-5 h-5" />
+                      </span>
+                    </button>
+                    <div className={`faq-grid ${isOpen ? 'open' : ''}`}>
+                      <div className="faq-inner">
+                        <p className="text-primary/75 pb-6 pr-10 max-w-3xl leading-relaxed">{it.a}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Final CTA
+       ============================================================ */
+    const FinalCTA = () => {
+      const openQuiz = useOpenQuiz();
+      return (
+        <section className="border-b border-border bg-surface">
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20 md:py-24 text-center">
+            <h2 className="h2-fluid font-bold text-primary tracking-tighter2 max-w-3xl mx-auto">
+              Stop <SI>guessing</SI> which signals work.
+            </h2>
+            <p className="mt-8 text-lg md:text-xl text-primary/80 max-w-2xl mx-auto leading-relaxed">
+              Start your 14-day free trial. No card required. Cancel anytime.
+            </p>
+            <div className="mt-12 flex justify-center">
+              <a
+                href={DEFAULT_CHECKOUT_URL}
+                className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-8 py-4 rounded-md transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]"
+              >
+                Start My Free Trial
+                <ArrowRightIcon className="w-4 h-4" />
+              </a>
+            </div>
+            <p className="mt-5 text-sm">
+              <span className="text-muted">Not sure which plan? </span>
+              <button
+                onClick={openQuiz}
+                className="text-accent hover:text-accent/80 font-semibold border-b border-accent/40 hover:border-accent transition-colors"
+              >
+                Take the 60-second quiz →
+              </button>
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-8 text-sm text-muted">
+              <span className="inline-flex items-center gap-2"><CheckIcon className="w-4 h-4 text-accent" /> 14-day free trial</span>
+              <span className="inline-flex items-center gap-2"><CheckIcon className="w-4 h-4 text-accent" /> Cancel anytime</span>
+              <span className="inline-flex items-center gap-2"><CheckIcon className="w-4 h-4 text-accent" /> Local execution</span>
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Footer
+       ============================================================ */
+    const Footer = () => (
+      <footer className="bg-primary text-bg">
+        <div className="max-w-screen-2xl mx-auto px-6 md:px-10 py-20">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+            <div className="col-span-2 md:col-span-1">
+              <AsaWordmark className="h-7 w-auto brightness-0 invert" loading="lazy" />
+              <p className="mt-5 text-sm text-bg/80 max-w-xs leading-relaxed">Signal attribution for serious traders.</p>
+              <p className="mt-6 text-xs text-bg/55">© 2026 ASA Systems</p>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-bg/55">Product</p>
+              <ul className="mt-4 space-y-2 text-sm">
+                <li><a href="#how-it-works" className="text-bg/85 hover:text-bg">How it works</a></li>
+                <li><a href="#features"     className="text-bg/85 hover:text-bg">Features</a></li>
+                <li><a href="#pricing"      className="text-bg/85 hover:text-bg">Pricing</a></li>
+                <li><a href="#faq"          className="text-bg/85 hover:text-bg">FAQ</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-bg/55">Company</p>
+              <ul className="mt-4 space-y-2 text-sm">
+                <li><a href="/privacy"  className="text-bg/85 hover:text-bg">Privacy</a></li>
+                <li><a href="/terms"    className="text-bg/85 hover:text-bg">Terms</a></li>
+                <li><a href="/risk"     className="text-bg/85 hover:text-bg">Risk Disclosure</a></li>
+                <li><a href="/security" className="text-bg/85 hover:text-bg">Security</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-bg/55">Support</p>
+              <ul className="mt-4 space-y-2 text-sm">
+                <li><a href="mailto:christoffermoshiri@gmail.com" className="text-bg/85 hover:text-bg break-all">christoffermoshiri@gmail.com</a></li>
+                <li><a href="/status"  className="text-bg/85 hover:text-bg">Status</a></li>
+                <li><a href="/docs"    className="text-bg/85 hover:text-bg">Documentation</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-16 pt-8 border-t border-bg/15">
+            <p className="text-xs text-bg/55 leading-relaxed max-w-4xl">
+              Trading CFDs carries substantial risk. 74–89% of retail accounts lose money. ASA Systems provides software tools only, not investment advice. Past performance does not guarantee future results.
+            </p>
+          </div>
+        </div>
+      </footer>
+    );
+
+    /* ============================================================
+       Quiz funnel — written as curiosity about the trader, not a
+       product selector. Each option carries an `echo` string so
+       the results screen can reflect their actual answers back
+       in plain English ("Here's what we heard…"). Progress bar
+       is psychologically front-loaded — Q1 starts at 22% instead
+       of 0, so the visitor never feels like they're at the start.
+
+       Scoring: A = 0, B = 1, C = 2, D = 1.
+       Sum ≤ 3 → Starter, ≤ 7 → Pro, > 7 → Scale.
+       ============================================================ */
+    const QUIZ_QUESTIONS = [
+      {
+        q: "First — where are you at today?",
+        sub: "Be honest. The next four questions build on this one.",
+        progress: "Question 1 of 5 — let's see what fits you",
+        momentumPct: 22,
+        opts: [
+          { key: "A", emoji: "😤", label: "I'm copy-pasting from Telegram and it's eating my evenings", echo: "stuck copy-pasting signals by hand" },
+          { key: "B", emoji: "🐌", label: "I use another tool, but it's slow, clunky, or unreliable", echo: "fighting a tool that doesn't quite work" },
+          { key: "C", emoji: "🌱", label: "I'm new to signal trading — just exploring",                  echo: "new to signal trading and exploring your options" },
+          { key: "D", emoji: "🛠",  label: "I run my own signals and want to automate delivery",          echo: "running your own signals and ready to scale them" },
+        ],
+      },
+      {
+        q: "How many signal providers are you tracking?",
+        sub: "Most ASA traders cut this number by 40% in their first month — once they can see who's actually profitable.",
+        progress: "Question 2 of 5",
+        momentumPct: 40,
+        opts: [
+          { key: "A", emoji: "🎯", label: "Just 1 or 2 — keeping it focused",                  echo: "tracking 1–2 providers" },
+          { key: "B", emoji: "🌀", label: "3 to 5 — getting busy",                              echo: "juggling 3–5 providers at once" },
+          { key: "C", emoji: "🌐", label: "6 or more — and yes, it's becoming chaos",           echo: "running 6+ providers and feeling the chaos" },
+          { key: "D", emoji: "🔭", label: "Still hunting for ones actually worth following",    echo: "still hunting for providers worth following" },
+        ],
+      },
+      {
+        q: "What's your trading setup look like?",
+        sub: "We tune prop-firm rules, risk presets, and stealth mode based on this.",
+        progress: "Halfway there — Question 3 of 5",
+        momentumPct: 58,
+        opts: [
+          { key: "A", emoji: "💼", label: "My own live account — personal capital",                 echo: "trading on your own personal account" },
+          { key: "B", emoji: "🏆", label: "Funded prop account — FTMO, FundedNext, The5ers…",         echo: "trading a funded prop firm account" },
+          { key: "C", emoji: "🏛", label: "Multiple accounts — running it like a fund",              echo: "managing multiple accounts side-by-side" },
+          { key: "D", emoji: "🧪", label: "Demo / paper trading for now",                             echo: "testing things out in demo first" },
+        ],
+      },
+      {
+        q: "What hurts most about how you trade right now?",
+        sub: "The traders who fix this first compound the fastest. No wrong answer.",
+        progress: "Just 2 more — Question 4 of 5",
+        momentumPct: 75,
+        opts: [
+          { key: "A", emoji: "😴", label: "Missing trades while I'm asleep or at work",                            echo: "missing trades while you sleep or work" },
+          { key: "B", emoji: "⏱",  label: "Manual copying is too slow — I'm slipping every entry",                  echo: "slipping entries because manual copying is too slow" },
+          { key: "C", emoji: "📉", label: "I have no idea which providers are actually making me money",            echo: "having no clear view of which providers are profitable" },
+          { key: "D", emoji: "🔒", label: "I don't fully trust automation with my account yet",                     echo: "wanting automation without giving up control" },
+        ],
+      },
+      {
+        q: "If ASA worked perfectly for you, what changes?",
+        sub: "Last one. This is what we'll use to lock in your plan.",
+        progress: "Last question — your plan is next",
+        momentumPct: 90,
+        opts: [
+          { key: "A", emoji: "🎯", label: "I never miss another signal — ever",                            echo: "never missing another signal" },
+          { key: "B", emoji: "📊", label: "I scale across multiple providers, systematically",             echo: "scaling across providers systematically" },
+          { key: "C", emoji: "🔬", label: "I finally know which signals are worth paying for",             echo: "finally knowing which signals are worth paying for" },
+          { key: "D", emoji: "🎛", label: "I automate without losing control of my account",               echo: "automating with full control of your account" },
+        ],
+      },
+    ];
+
+    /* Plan copy is tuned to land *as a personalised match* — the
+       results screen weaves the trader's own words back at them
+       before naming the plan, so the reveal feels like a fit
+       diagnosis, not a generic upsell. */
+    const PLAN_RECOMMENDATIONS = {
+      starter: {
+        id: "starter",
+        name: "ASA Starter",
+        price: "£19",
+        cadence: "/mo",
+        pitch: "Lean, focused, and built for one account and a couple of trusted providers.",
+        bullets: [
+          "1 MT5 account",
+          "3 signal providers",
+          "Full attribution + leaderboard",
+          "Every core feature, no asterisks",
+        ],
+      },
+      pro: {
+        id: "pro",
+        name: "ASA Pro",
+        price: "£35",
+        cadence: "/mo",
+        pitch: "Built for the trader running multiple providers — with prop-firm guardrails on every trade.",
+        bullets: [
+          "3 MT5 accounts",
+          "Unlimited providers",
+          "AI parsing + stealth mode",
+          "Per-provider Sharpe ratio",
+          "Prop-firm rule enforcement",
+        ],
+      },
+      business: {
+        id: "scale",
+        name: "ASA Scale",
+        price: "£59",
+        cadence: "/mo",
+        pitch: "For traders running multiple accounts at fund-style scale — and the engine to back it.",
+        bullets: [
+          "5 MT5 accounts",
+          "Unlimited providers",
+          "Priority support",
+          "Everything in Pro",
+        ],
+      },
+    };
+
+    /* Tailored reasons the recommended plan fits — one line each
+       per Q3 (setup) and Q4 (pain). These are stitched into the
+       results screen so the visitor sees their *own* answer
+       turned into a why-this-plan-fits sentence. */
+    const REASONS_BY_PAIN = {
+      A: "you'll want fully automated execution running 24/7 — the core of every ASA plan.",
+      B: "you need sub-100ms execution — ASA places the trade faster than you finish reading the Telegram message.",
+      C: "you'll live in the Provider Leaderboard tab — Sharpe ratio and R-multiple per provider, attributed in 60 seconds.",
+      D: "stealth mode and prop-firm rule enforcement check every trade before it goes live — automation without surrendering control.",
+    };
+    const REASONS_BY_SETUP = {
+      A: "one MT5 account is enough — Starter handles it cleanly.",
+      B: "every prop-firm preset is pre-loaded — FTMO, FundedNext, The5ers and ten more, checked before every entry.",
+      C: "running multiple accounts in parallel is where Scale earns its money.",
+      D: "demo's a great place to learn — and you can upgrade the moment you go live.",
+    };
+
+    const recommendPlan = (answers) => {
+      const map = { A: 0, B: 1, C: 2, D: 1 };
+      const score = answers.reduce((s, a) => s + (map[a] ?? 1), 0);
+      if (score <= 3) return PLAN_RECOMMENDATIONS.starter;
+      if (score <= 7) return PLAN_RECOMMENDATIONS.pro;
+      return PLAN_RECOMMENDATIONS.business;
+    };
+
+    /* Pull the matching option-echo strings out of the answer keys
+       so the results screen can recap "Here's what we heard…" in
+       the trader's own words. */
+    const echoFor = (qIndex, answerKey) => {
+      const opt = QUIZ_QUESTIONS[qIndex]?.opts.find(o => o.key === answerKey);
+      return opt ? opt.echo : null;
+    };
+
+    const QuizFunnel = ({ open, onClose }) => {
+      const [step, setStep]       = useState(0); // 0..4 = questions, 5 = capture, 6 = result
+      const [answers, setAnswers] = useState([]);
+      const [name, setName]       = useState("");
+      const [email, setEmail]     = useState("");
+      const [phone, setPhone]     = useState("");
+      const [submitting, setSubmitting] = useState(false);
+      const [emailErr, setEmailErr]     = useState("");
+
+      // Lock body scroll while open
+      useEffect(() => {
+        if (!open) return;
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => { document.body.style.overflow = prev; };
+      }, [open]);
+
+      // Esc key closes
+      useEffect(() => {
+        if (!open) return;
+        const h = (e) => { if (e.key === "Escape") onClose(); };
+        window.addEventListener("keydown", h);
+        return () => window.removeEventListener("keydown", h);
+      }, [open, onClose]);
+
+      const reset = () => { setStep(0); setAnswers([]); setName(""); setEmail(""); setPhone(""); setEmailErr(""); };
+
+      // Reset when opened
+      useEffect(() => { if (open) reset(); }, [open]);
+
+      if (!open) return null;
+
+      const plan = step >= 6 ? recommendPlan(answers) : null;
+
+      // Progress bar is psychologically front-loaded — each
+      // question pre-fills further than its raw fraction so the
+      // visitor never feels like they're back at the start.
+      const PROGRESS_BY_STEP = [
+        QUIZ_QUESTIONS[0].momentumPct,
+        QUIZ_QUESTIONS[1].momentumPct,
+        QUIZ_QUESTIONS[2].momentumPct,
+        QUIZ_QUESTIONS[3].momentumPct,
+        QUIZ_QUESTIONS[4].momentumPct,
+        96, // capture
+        100, // result
+      ];
+      const pct = PROGRESS_BY_STEP[Math.min(step, PROGRESS_BY_STEP.length - 1)];
+
+      const progressLabel =
+        step < QUIZ_QUESTIONS.length ? QUIZ_QUESTIONS[step].progress
+        : step === QUIZ_QUESTIONS.length ? "One step from your match"
+        : "Your match";
+
+      const pickAnswer = (key) => {
+        const next = [...answers];
+        next[step] = key;
+        setAnswers(next);
+        // Tiny delay so the selection is visible before advancing
+        setTimeout(() => setStep((s) => s + 1), 180);
+      };
+
+      const goBack = () => { if (step > 0) setStep((s) => s - 1); };
+
+      const submitCapture = async (e) => {
+        e.preventDefault();
+        const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        if (!ok) { setEmailErr("Please enter a valid email"); return; }
+        setEmailErr("");
+        setSubmitting(true);
+
+        const rec = recommendPlan(answers);
+        const payload = {
+          name: name || null,
+          email,
+          phone: phone || null,
+          source: "quiz",
+          plan: rec.id,
+          answers,
+        };
+
+        // Fire-and-forget — don't block the user on the network
+        try {
+          fetch("/api/waitlist", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            keepalive: true,
+          }).catch(() => {});
+        } catch (_) { /* ignore — local file open, etc. */ }
+
+        // Reveal result immediately — don't gate behind the network
+        setTimeout(() => { setSubmitting(false); setStep(6); }, 220);
+      };
+
+      const registerHref = (() => {
+        const rec = plan || recommendPlan(answers.length ? answers : ["B"]);
+        return STRIPE_CHECKOUT_URLS[rec.id] || DEFAULT_CHECKOUT_URL;
+      })();
+
+      // Recap line for the results screen — turns the trader's
+      // own answers into one fluent sentence they'll recognise.
+      const buildRecap = () => {
+        const q1 = echoFor(0, answers[0]);
+        const q2 = echoFor(1, answers[1]);
+        const q3 = echoFor(2, answers[2]);
+        const q4 = echoFor(3, answers[3]);
+        const q5 = echoFor(4, answers[4]);
+        return { q1, q2, q3, q4, q5 };
+      };
+
+      const reasonsForResult = () => {
+        const pain  = answers[3];
+        const setup = answers[2];
+        return [
+          REASONS_BY_PAIN[pain],
+          REASONS_BY_SETUP[setup],
+        ].filter(Boolean);
+      };
+
+      return (
+        <div
+          className="quiz-overlay fixed inset-0 z-[60] bg-primary/60 backdrop-blur-sm flex items-stretch sm:items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Find my plan"
+          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+          <div className="quiz-card relative w-full sm:max-w-xl mx-0 sm:mx-4 bg-surface sm:rounded-2xl shadow-2xl shadow-gray-900/30 flex flex-col max-h-screen sm:max-h-[92vh] overflow-hidden">
+            {/* Progress bar — pre-filled for momentum */}
+            <div className="h-1.5 bg-border w-full">
+              <div className="h-full bg-accent transition-all duration-500 ease-out" style={{ width: pct + "%" }}></div>
+            </div>
+
+            {/* Top bar */}
+            <div className="flex items-center justify-between px-5 pt-5">
+              {step > 0 && step < 6 ? (
+                <button
+                  onClick={goBack}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-primary transition-colors p-2 -ml-2"
+                  aria-label="Back"
+                >
+                  <ArrowRightIcon className="w-3.5 h-3.5 rotate-180" />
+                  Back
+                </button>
+              ) : (
+                <span />
+              )}
+              <span className="text-[11px] font-semibold tracking-widest uppercase text-muted">
+                {progressLabel}
+              </span>
+              <button
+                onClick={onClose}
+                className="p-2 -mr-2 text-muted hover:text-primary transition-colors"
+                aria-label="Close"
+              >
+                <CloseIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="px-6 sm:px-8 pt-6 pb-8 overflow-y-auto">
+              {step < QUIZ_QUESTIONS.length && (
+                <div key={step} className="quiz-step">
+                  <h2 className="font-display text-2xl sm:text-[28px] text-primary leading-tight tracking-tight">
+                    {QUIZ_QUESTIONS[step].q}
+                  </h2>
+                  <p className="mt-3 text-sm text-muted leading-relaxed">
+                    {QUIZ_QUESTIONS[step].sub}
+                  </p>
+                  <div className="mt-7 flex flex-col gap-2.5">
+                    {QUIZ_QUESTIONS[step].opts.map((o) => {
+                      const selected = answers[step] === o.key;
+                      return (
+                        <button
+                          key={o.key}
+                          onClick={() => pickAnswer(o.key)}
+                          className={`text-left w-full flex items-center gap-4 px-4 py-4 rounded-xl border-2 transition-all duration-150 ${
+                            selected
+                              ? "border-accent bg-accent/10"
+                              : "border-border hover:border-accent/60 hover:bg-accent/[0.04] hover:-translate-y-0.5 hover:shadow-md"
+                          }`}
+                        >
+                          <span className="w-10 h-10 rounded-lg bg-surface-2 border border-border flex items-center justify-center text-xl shrink-0">
+                            {o.emoji}
+                          </span>
+                          <span className="text-[15px] font-medium text-primary leading-snug">
+                            {o.label}
+                          </span>
+                          {selected && (
+                            <span className="ml-auto text-accent shrink-0">
+                              <CheckIcon className="w-5 h-5" />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {step === QUIZ_QUESTIONS.length && (
+                <div className="quiz-step">
+                  <div className="inline-flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase text-accent border border-accent/40 bg-accent/10 rounded-full px-3 py-1.5">
+                    <CheckIcon className="w-3.5 h-3.5" />
+                    Match found
+                  </div>
+                  <h2 className="mt-4 font-display text-2xl sm:text-3xl text-primary leading-tight tracking-tight">
+                    Your plan's ready. Where should we send it?
+                  </h2>
+                  <p className="mt-3 text-sm sm:text-base text-muted leading-relaxed">
+                    We'll email you the match, the price, and the 5-minute setup guide. One email. No drip campaign.
+                  </p>
+
+                  <form className="mt-7 flex flex-col gap-4" onSubmit={submitCapture}>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs font-semibold text-primary/80">First name</span>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Alex"
+                        autoComplete="given-name"
+                        className="px-4 py-3 rounded-lg border border-border bg-surface text-primary placeholder:text-muted/70 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs font-semibold text-primary/80">Email <span className="text-warn">*</span></span>
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => { setEmail(e.target.value); if (emailErr) setEmailErr(""); }}
+                        placeholder="you@email.com"
+                        autoComplete="email"
+                        className={`px-4 py-3 rounded-lg border bg-surface text-primary placeholder:text-muted/70 focus:outline-none focus:ring-2 ${
+                          emailErr
+                            ? "border-warn focus:border-warn focus:ring-warn/30"
+                            : "border-border focus:border-accent focus:ring-accent/30"
+                        }`}
+                      />
+                      {emailErr && <span className="text-xs text-warn">{emailErr}</span>}
+                    </label>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs font-semibold text-primary/80">
+                        Phone <span className="font-normal text-muted">(optional — get the MT5 connection guide by SMS)</span>
+                      </span>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+44 7…"
+                        autoComplete="tel"
+                        className="px-4 py-3 rounded-lg border border-border bg-surface text-primary placeholder:text-muted/70 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="mt-2 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 disabled:opacity-70 text-bg font-semibold px-6 py-3.5 rounded-lg transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.6)]"
+                    >
+                      {submitting ? "Matching…" : "Reveal my match"}
+                      <ArrowRightIcon className="w-4 h-4" />
+                    </button>
+                    <p className="text-[11px] text-muted text-center">No spam. Unsubscribe in one click. We'll only ever email about ASA.</p>
+                  </form>
+                </div>
+              )}
+
+              {step === 6 && plan && (() => {
+                const recap = buildRecap();
+                const reasons = reasonsForResult();
+                return (
+                  <div className="quiz-step">
+                    <div className="inline-flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase text-accent border border-accent/40 bg-accent/10 rounded-full px-3 py-1.5">
+                      <CheckIcon className="w-3.5 h-3.5" /> Matched for you
+                    </div>
+
+                    <p className="mt-5 text-sm text-muted">Here's what you told us:</p>
+                    <ul className="mt-3 space-y-1.5 text-sm text-primary/90 leading-snug">
+                      {recap.q1 && <li className="flex gap-2"><span className="text-accent">·</span><span>You're <span className="font-semibold">{recap.q1}</span>.</span></li>}
+                      {recap.q2 && <li className="flex gap-2"><span className="text-accent">·</span><span>You're currently <span className="font-semibold">{recap.q2}</span>.</span></li>}
+                      {recap.q3 && <li className="flex gap-2"><span className="text-accent">·</span><span>You're <span className="font-semibold">{recap.q3}</span>.</span></li>}
+                      {recap.q4 && <li className="flex gap-2"><span className="text-accent">·</span><span>Your biggest pain: <span className="font-semibold">{recap.q4}</span>.</span></li>}
+                      {recap.q5 && <li className="flex gap-2"><span className="text-accent">·</span><span>What you want: <span className="font-semibold">{recap.q5}</span>.</span></li>}
+                    </ul>
+
+                    <h2 className="mt-7 font-display text-3xl sm:text-4xl text-primary leading-tight tracking-tight">
+                      {plan.name}.
+                    </h2>
+                    <p className="mt-3 text-base text-primary/80 leading-relaxed">
+                      {plan.pitch}
+                    </p>
+
+                    {reasons.length > 0 && (
+                      <div className="mt-5 border-l-2 border-accent pl-4 space-y-2.5">
+                        {reasons.map((r, i) => (
+                          <p key={i} className="text-sm text-primary/85 leading-relaxed">
+                            <span className="text-accent font-semibold">Because </span>{r}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="mt-7 rounded-xl border-2 border-accent bg-accent/5 p-6 shadow-[0_18px_45px_-25px_rgba(55,170,53,0.45)]">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-bold text-primary tracking-tighter2">{plan.price}</span>
+                        <span className="text-sm text-muted">{plan.cadence}</span>
+                        <span className="ml-auto text-[11px] font-semibold tracking-widest uppercase text-accent">14-day free trial</span>
+                      </div>
+                      <ul className="mt-5 space-y-2.5">
+                        {plan.bullets.map((b) => (
+                          <li key={b} className="flex items-start gap-3 text-sm text-primary/85">
+                            <CheckIcon className="w-4 h-4 mt-0.5 text-accent shrink-0" />
+                            <span>{b}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <a
+                      href={registerHref}
+                      className="mt-6 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3.5 rounded-lg transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.6)] w-full"
+                    >
+                      Start {plan.name} free for 14 days
+                      <ArrowRightIcon className="w-4 h-4" />
+                    </a>
+                    <button
+                      onClick={() => { onClose(); setTimeout(() => { const el = document.getElementById('pricing'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }, 50); }}
+                      className="mt-3 w-full text-center text-sm text-muted hover:text-primary transition-colors py-2"
+                    >
+                      Not feeling it? Compare all plans →
+                    </button>
+                    <p className="mt-2 text-[11px] text-muted text-center">
+                      Cancel any time
+                    </p>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    /* ============================================================
+       Sticky quiz pill — desktop only, slides in from the right
+       once the visitor has scrolled past 30% of the page. Mirrors
+       the Intercom-bubble pattern: persistent secondary CTA that
+       intercepts indecision without competing with the hero.
+       ============================================================ */
+    const StickyQuizPill = () => {
+      const openQuiz = useOpenQuiz();
+      const [show, setShow] = useState(false);
+      useEffect(() => {
+        const onScroll = () => {
+          const max  = document.documentElement.scrollHeight - window.innerHeight;
+          const pct  = max > 0 ? window.scrollY / max : 0;
+          setShow(pct > 0.30 && pct < 0.96);
+        };
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+      }, []);
+
+      return (
+        <div
+          className={`hidden md:block fixed right-4 lg:right-6 bottom-20 z-40 transition-all duration-300 ${
+            show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+          }`}
+        >
+          <button
+            onClick={openQuiz}
+            className="group flex items-center gap-2.5 bg-surface border border-border hover:border-accent shadow-xl shadow-gray-300/40 hover:shadow-accent/20 rounded-full pl-3 pr-5 py-2.5 transition-all"
+            aria-label="Take the 60-second plan quiz"
+          >
+            <span className="w-7 h-7 rounded-full bg-accent text-bg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+              <HelpIcon className="w-3.5 h-3.5" />
+            </span>
+            <span className="flex flex-col items-start leading-tight">
+              <span className="text-[9px] font-semibold tracking-widest uppercase text-muted">60-second quiz</span>
+              <span className="text-xs font-semibold text-primary">Find my plan →</span>
+            </span>
+          </button>
+        </div>
+      );
+    };
+
+    /* ============================================================
+       Bottom-right popup widget
+       ============================================================ */
+    const SupportWidget = () => {
+      const [open, setOpen] = useState(false);
+      const [mounted, setMounted] = useState(false);
+      useEffect(() => { setMounted(true); }, []);
+      if (!mounted) return null;
+
+      return (
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
+          {open ? (
+            <div
+              className="widget-card-enter widget-card-enter-active w-[19rem] sm:w-80 bg-surface border border-border rounded-xl shadow-[0_20px_60px_-20px_rgba(17,24,39,0.20)] overflow-hidden"
+              role="dialog"
+              aria-label="Contact support"
+            >
+              <div className="relative px-5 pt-5 pb-3 border-b border-border bg-surface-2">
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-70"></div>
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-md bg-accent/15 border border-accent/40 flex items-center justify-center text-accent shrink-0">
+                    <HelpIcon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-primary">Questions? We reply within 24 hours.</p>
+                    <p className="mt-1 text-xs text-muted leading-relaxed">A real person reads every email. No support ticket queue, no chatbot.</p>
+                  </div>
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="-mt-1.5 -mr-1.5 p-2.5 min-w-[44px] min-h-[44px] text-muted hover:text-primary transition-colors inline-flex items-center justify-center"
+                    aria-label="Close"
+                  >
+                    <CloseIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-5 flex flex-col gap-3">
+                <a
+                  href="mailto:christoffermoshiri@gmail.com"
+                  className="flex items-center gap-3 px-3 py-2.5 border border-border rounded-md hover:border-primary/30 transition-colors"
+                >
+                  <MailIcon className="w-4 h-4 text-muted shrink-0" />
+                  <span className="text-sm text-primary truncate">christoffermoshiri@gmail.com</span>
+                </a>
+                <a
+                  href={DEFAULT_CHECKOUT_URL}
+                  className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold text-sm px-4 py-2.5 rounded-md transition-colors"
+                >
+                  Start My Free Trial
+                  <ArrowRightIcon className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setOpen(true)}
+              className="inline-flex items-center gap-2 bg-surface border border-border hover:border-accent/50 text-primary px-4 py-3 rounded-full shadow-[0_10px_40px_-15px_rgba(17,24,39,0.20)] transition-colors"
+              aria-label="Open contact widget"
+            >
+              <span className="w-7 h-7 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center text-accent">
+                <ChatIcon className="w-4 h-4" />
+              </span>
+              <span className="text-sm font-medium">Got a question? <span className="text-muted hidden sm:inline">We reply within 24h</span></span>
+            </button>
+          )}
+        </div>
+      );
+    };
+
+    /* ============================================================
+       Quiz context — exposes openQuiz() to any descendant CTA.
+       ============================================================ */
+    const QuizContext = React.createContext({ openQuiz: () => {} });
+    const useOpenQuiz = () => React.useContext(QuizContext).openQuiz;
+    const WaitlistContext = React.createContext({ openWaitlist: () => {} });
+    const useOpenWaitlist = () => React.useContext(WaitlistContext).openWaitlist;
+
+    /* ============================================================
+       App
+       ============================================================ */
+    const App = () => {
+      const [quizOpen, setQuizOpen] = useState(false);
+      const openQuiz  = () => setQuizOpen(true);
+      const closeQuiz = () => setQuizOpen(false);
+      const [waitlistPlan, setWaitlistPlan] = useState(null);
+      const openWaitlist = (plan = "Pro") => setWaitlistPlan(plan);
+
+      useReveal();
+
+      return (
+        <QuizContext.Provider value={{ openQuiz }}>
+          <WaitlistContext.Provider value={{ openWaitlist }}>
+          <Navigation />
+          <main>
+            <Hero />
+            <StatBand />
+            <PainPoints />
+            <EveryFillTagged />
+            <ProblemSolution />
+            <HowItWorks />
+            <PropTraderMode />
+            <Features />
+            <Comparison />
+            <ThreePositive />
+            <Security />
+            <Pricing />
+            <FAQ />
+            <FinalCTA />
+          </main>
+          <Footer />
+          <StickyQuizPill />
+          <SupportWidget />
+          <QuizFunnel open={quizOpen} onClose={closeQuiz} />
+          {waitlistPlan && (
+            <WaitlistModal plan={waitlistPlan} onClose={() => setWaitlistPlan(null)} />
+          )}
+          </WaitlistContext.Provider>
+        </QuizContext.Provider>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
