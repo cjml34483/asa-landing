@@ -263,7 +263,7 @@
     // Stripe Checkout links pulled from STRIPE_CHECKOUT_URL_STARTER,
     // STRIPE_CHECKOUT_URL_PRO, and STRIPE_CHECKOUT_URL_ELITE.
     //
-    // Public tier name "Scale" maps to internal canonical "elite"
+    // Public tier name "Elite" maps to internal canonical "elite"
     // (matches billing.py's TIER_ALIASES — keeps the landing copy
     // and the Stripe price IDs in lockstep without a rename here).
     const STRIPE_CHECKOUT_URLS = {
@@ -1940,7 +1940,7 @@
       const tiers = [
         { name: "Starter", monthly: 19, annual: 171, features: ["1 MT5 account", "3 signal providers", "All core features"], highlight: false, badge: null },
         { name: "Pro",     monthly: 35, annual: 315, features: ["3 MT5 accounts", "Unlimited providers", "AI parsing", "Stealth mode"], highlight: true,  badge: "Most popular" },
-        { name: "Scale",   monthly: 59, annual: 531, features: ["5 MT5 accounts", "Unlimited providers", "Priority support", "All features"], highlight: false, badge: null },
+        { name: "Elite",   monthly: 59, annual: 531, features: ["5 MT5 accounts", "Unlimited providers", "Priority support", "All features"], highlight: false, badge: null },
       ];
       return (
       <>
@@ -2256,7 +2256,7 @@
        of 0, so the visitor never feels like they're at the start.
 
        Scoring: A = 0, B = 1, C = 2, D = 1.
-       Sum ≤ 3 → Starter, ≤ 7 → Pro, > 7 → Scale.
+       Sum ≤ 3 → Starter, ≤ 7 → Pro, > 7 → Elite.
        ============================================================ */
     const QUIZ_QUESTIONS = [
       {
@@ -2355,7 +2355,7 @@
       },
       business: {
         id: "scale",
-        name: "ASA Scale",
+        name: "ASA Elite",
         price: "£59",
         cadence: "/mo",
         pitch: "For traders running multiple accounts at fund-style scale — and the engine to back it.",
@@ -2381,7 +2381,7 @@
     const REASONS_BY_SETUP = {
       A: "one MT5 account is enough — Starter handles it cleanly.",
       B: "every prop-firm preset is pre-loaded — FTMO, FundedNext, The5ers and ten more, checked before every entry.",
-      C: "running multiple accounts in parallel is where Scale earns its money.",
+      C: "running multiple accounts in parallel is where Elite earns its money.",
       D: "demo's a great place to learn — and you can upgrade the moment you go live.",
     };
 
