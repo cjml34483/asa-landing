@@ -247,6 +247,12 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Supabase JS SDK for the post-payment "Create your account" modal.
+       Anon key only — never the service key. The buyer's password is
+       sent directly to Supabase, never touches our servers, and a
+       verification email is dispatched by Supabase before they can log
+       into the desktop app. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-bg text-primary">
   <div id="root"></div>
@@ -273,6 +279,27 @@
       elite:   "https://buy.stripe.com/fZufZk4DN7tqclt9Gv4AU04",
     };
     const DEFAULT_CHECKOUT_URL = STRIPE_CHECKOUT_URLS.pro;
+
+    // ──────────────────────────────────────────────────────────────
+    //  Supabase native auth (public anon key — safe to ship)
+    // ──────────────────────────────────────────────────────────────
+    // The anon key is intended for use in browser code; Row Level
+    // Security on the Supabase side decides what an unauthenticated
+    // visitor is allowed to read or write. Never ship the SERVICE
+    // key here — that one bypasses RLS and lives only on the Flask
+    // backend.
+    const SUPABASE_URL = "https://dguqrwcnjjlhdhlzsiff.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRndXFyd2NuampsaGRobHpzaWZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MTI1ODYsImV4cCI6MjA5NDI4ODU4Nn0.8kDlLW2Crgn8hbIirTT7Lv9N7Gnm8BtpBw_mswJKxuY";
+    const sb = (window.supabase && window.supabase.createClient)
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+
+    // Signup context — opened from Nav "Already paid? Set up your
+    // account" link, or auto-opens when the URL carries ?success=true
+    // (Stripe success-redirect, configured per Payment Link in the
+    // Stripe Dashboard).
+    const SignupContext = React.createContext({ openSignup: () => {} });
+    const useOpenSignup = () => React.useContext(SignupContext).openSignup;
 
     /* ============================================================
        CountUp — animates a number from 0 → end when scrolled into
@@ -825,6 +852,7 @@
     const Navigation = () => {
       const [open, setOpen] = useState(false);
       const openQuiz = useOpenQuiz();
+      const openSignup = useOpenSignup();
       const links = [
         { href: "#how-it-works", label: "How it works" },
         { href: "#features",     label: "Features" },
@@ -850,6 +878,13 @@
               </div>
 
               <div className="hidden md:flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={openSignup}
+                  className="text-sm text-primary/80 hover:text-primary transition-colors"
+                >
+                  Already paid? Set up account
+                </button>
                 <a href="/login" className="text-sm text-primary/80 hover:text-primary transition-colors">Log in</a>
                 <a
                   href={DEFAULT_CHECKOUT_URL}
@@ -903,6 +938,13 @@
                   </a>
                 ))}
                 <div className="mt-auto flex flex-col gap-3 pt-10">
+                  <button
+                    onClick={() => { close(); openSignup(); }}
+                    className="text-center font-semibold py-3 rounded-md"
+                    style={{border:'1px solid #111827', color:'#111827'}}
+                  >
+                    Already paid? Set up account
+                  </button>
                   <a href="/login" onClick={close} className="text-center font-semibold py-3 rounded-md" style={{border:'1px solid #111827', color:'#111827'}}>Log in</a>
                   <a href={DEFAULT_CHECKOUT_URL} onClick={close} className="text-center bg-accent text-bg font-semibold py-3 rounded-md">
                     Start My Free Trial
@@ -1898,6 +1940,203 @@
                     {status === 'loading' ? 'Sending…' : 'Secure my spot →'}
                   </button>
                   <p className="text-center text-[11px] text-muted">No spam. Unsubscribe in one click. We'll respect your inbox. 🙂</p>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    /* ============================================================
+       SignupModal — post-payment "Create your account" flow.
+
+       Triggered either by:
+         • the "Already paid? Set up your account" link in the nav, OR
+         • a Stripe success-redirect of the form ?success=true (set the
+           success URL on each Payment Link in the Stripe Dashboard to
+           https://asasystems.app?success=true)
+
+       Calls supabase.auth.signUp() with the public anon key. Supabase
+       sends a verification email and stamps email_confirmed_at when
+       the user clicks the link. Until verified, the desktop app
+       refuses to log them in.
+
+       This is the ONLY signup path going forward — every login the
+       desktop sees is either an existing admin (kept by the migration)
+       or a Supabase-verified buyer.
+       ============================================================ */
+    const SignupModal = ({ onClose }) => {
+      const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
+      const [status, setStatus] = useState('idle'); // idle | loading | success | error
+      const [errorMsg, setErrorMsg] = useState('');
+
+      const update = (k) => (e) => setForm(prev => ({ ...prev, [k]: e.target.value }));
+
+      const submit = async (e) => {
+        e.preventDefault();
+        setErrorMsg('');
+        if (!sb) {
+          setStatus('error');
+          setErrorMsg('Sign-up is temporarily unavailable — please try again in a moment.');
+          return;
+        }
+        if (form.password.length < 8) {
+          setStatus('error');
+          setErrorMsg('Password must be at least 8 characters.');
+          return;
+        }
+        if (form.password !== form.confirm) {
+          setStatus('error');
+          setErrorMsg('Passwords do not match.');
+          return;
+        }
+        setStatus('loading');
+        try {
+          const { data, error } = await sb.auth.signUp({
+            email: form.email.trim().toLowerCase(),
+            password: form.password,
+            options: {
+              data: { name: form.name.trim() },
+              // After clicking the email link, send the buyer back to the
+              // landing page so they know the verification worked. The
+              // desktop app login is the next step from there.
+              emailRedirectTo: 'https://asasystems.app?verified=true',
+            },
+          });
+          if (error) {
+            setStatus('error');
+            // Supabase returns "User already registered" if the email
+            // exists. Surface that helpfully so the buyer can just log in.
+            setErrorMsg(
+              /already.*registered|exists/i.test(error.message)
+                ? 'An account with that email already exists — open the desktop app and log in instead.'
+                : error.message
+            );
+            return;
+          }
+          setStatus('success');
+        } catch (err) {
+          setStatus('error');
+          setErrorMsg('Something went wrong. Please try again or email support@asasystems.app.');
+        }
+      };
+
+      React.useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+      }, []);
+
+      return (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+          <div className="relative bg-surface border border-border rounded-2xl p-8 w-full max-w-md shadow-2xl">
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
+              aria-label="Close"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+
+            {status === 'success' ? (
+              <div className="text-center py-4">
+                <div className="w-14 h-14 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center mx-auto mb-5">
+                  <CheckIcon className="w-7 h-7 text-accent" />
+                </div>
+                <h3 className="text-2xl font-bold text-primary">Check your inbox.</h3>
+                <p className="mt-3 text-primary/75">
+                  We sent a verification link to <strong>{form.email}</strong>. Click it,
+                  then download the desktop app and log in with the email and password
+                  you just chose.
+                </p>
+                <p className="mt-3 text-xs text-muted">
+                  Didn't get it? Check spam, or wait 60 seconds and try again.
+                </p>
+                <button
+                  onClick={onClose}
+                  className="mt-6 inline-flex items-center justify-center bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3 rounded-md transition-colors w-full"
+                >
+                  Got it
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <p className="text-xs font-semibold text-muted tracking-widest uppercase mb-1">Final step</p>
+                  <h3 className="text-2xl font-bold text-primary">Set up your ASA account.</h3>
+                  <p className="mt-2 text-sm text-primary/70">
+                    Create a password — we'll email you a verification link.
+                    Once verified, log into the desktop app with this email and password.
+                  </p>
+                </div>
+                <form onSubmit={submit} className="flex flex-col gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-muted mb-1.5 tracking-wide uppercase">Name *</label>
+                    <input
+                      required
+                      type="text"
+                      autoComplete="name"
+                      value={form.name}
+                      onChange={update('name')}
+                      placeholder="Your name"
+                      className="w-full bg-bg border border-border rounded-md px-4 py-2.5 text-sm text-primary placeholder:text-muted focus:outline-none focus:border-accent/60 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted mb-1.5 tracking-wide uppercase">Email *</label>
+                    <input
+                      required
+                      type="email"
+                      autoComplete="email"
+                      value={form.email}
+                      onChange={update('email')}
+                      placeholder="you@example.com"
+                      className="w-full bg-bg border border-border rounded-md px-4 py-2.5 text-sm text-primary placeholder:text-muted focus:outline-none focus:border-accent/60 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted mb-1.5 tracking-wide uppercase">Password * (min 8 chars)</label>
+                    <input
+                      required
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      value={form.password}
+                      onChange={update('password')}
+                      placeholder="••••••••"
+                      className="w-full bg-bg border border-border rounded-md px-4 py-2.5 text-sm text-primary placeholder:text-muted focus:outline-none focus:border-accent/60 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted mb-1.5 tracking-wide uppercase">Confirm Password *</label>
+                    <input
+                      required
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      value={form.confirm}
+                      onChange={update('confirm')}
+                      placeholder="••••••••"
+                      className="w-full bg-bg border border-border rounded-md px-4 py-2.5 text-sm text-primary placeholder:text-muted focus:outline-none focus:border-accent/60 transition-colors"
+                    />
+                  </div>
+                  {status === 'error' && errorMsg && (
+                    <p className="text-xs text-red-500">{errorMsg}</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    className="mt-2 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 disabled:opacity-60 text-bg font-semibold px-5 py-3.5 rounded-md transition-colors w-full"
+                  >
+                    {status === 'loading' ? 'Creating account…' : 'Create account & send verification'}
+                  </button>
+                  <p className="text-center text-[11px] text-muted">
+                    By creating an account you agree to our Terms and Privacy Policy.
+                  </p>
                 </form>
               </>
             )}
@@ -2927,12 +3166,56 @@
       const closeQuiz = () => setQuizOpen(false);
       const [waitlistPlan, setWaitlistPlan] = useState(null);
       const openWaitlist = (plan = "Pro") => setWaitlistPlan(plan);
+      const [signupOpen, setSignupOpen] = useState(false);
+      const openSignup = () => setSignupOpen(true);
+      const closeSignup = () => setSignupOpen(false);
+
+      // Auto-open signup modal when Stripe redirects back with ?success=true.
+      // We strip the query param after opening so a refresh doesn't re-open
+      // the modal forever. ?verified=true means the buyer just clicked the
+      // Supabase confirmation link — show a one-time toast / banner instead.
+      const [verifiedBanner, setVerifiedBanner] = useState(false);
+      React.useEffect(() => {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('success') === 'true') {
+            setSignupOpen(true);
+            params.delete('success');
+            const next = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.history.replaceState({}, '', next);
+          }
+          if (params.get('verified') === 'true') {
+            setVerifiedBanner(true);
+            params.delete('verified');
+            const next = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.history.replaceState({}, '', next);
+          }
+        } catch (e) {
+          // URLSearchParams missing on truly ancient browsers — fail silent
+        }
+      }, []);
 
       useReveal();
 
       return (
         <QuizContext.Provider value={{ openQuiz }}>
           <WaitlistContext.Provider value={{ openWaitlist }}>
+          <SignupContext.Provider value={{ openSignup }}>
+          {verifiedBanner && (
+            <div
+              className="fixed top-0 left-0 right-0 z-[60] bg-accent text-bg text-center text-sm font-semibold py-2.5 px-4"
+              role="status"
+            >
+              ✓ Email verified. Open the ASA desktop app and log in with your email and password.
+              <button
+                onClick={() => setVerifiedBanner(false)}
+                className="ml-3 underline underline-offset-2"
+                aria-label="Dismiss"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
           <Navigation />
           <main>
             <Hero />
@@ -2957,6 +3240,8 @@
           {waitlistPlan && (
             <WaitlistModal plan={waitlistPlan} onClose={() => setWaitlistPlan(null)} />
           )}
+          {signupOpen && <SignupModal onClose={closeSignup} />}
+          </SignupContext.Provider>
           </WaitlistContext.Provider>
         </QuizContext.Provider>
       );
@@ -3047,8 +3332,4 @@
         document.getElementById('asa-cookie-banner').style.display = 'block';
       }
       document.getElementById('asa-cookie-accept').addEventListener('click', function() { setConsent('accepted'); });
-      document.getElementById('asa-cookie-decline').addEventListener('click', function() { setConsent('declined'); });
-    })();
-  </script>
-</body>
-</html>
+      document.getElementById('asa-cookie-decline').addEventListener('click', 
