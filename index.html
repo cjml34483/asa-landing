@@ -2911,5 +2911,91 @@
 
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
+
+  <!-- Cookie Consent Banner -->
+  <div id="asa-cookie-banner" style="
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: #ffffff;
+    border-top: 1px solid #E5E7EB;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -4px 24px -4px rgba(0,0,0,0.12);
+    padding: 16px 24px;
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  ">
+    <div style="
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    ">
+      <p style="
+        flex: 1;
+        min-width: 240px;
+        margin: 0;
+        font-size: 14px;
+        color: #374151;
+        line-height: 1.5;
+      ">
+        We use cookies to improve your experience. By using ASA Terminal, you agree to our use of analytics and essential cookies.
+        <a href="#" style="color: #37AA35; text-decoration: underline; margin-left: 4px;">Learn more</a>
+      </p>
+      <div style="display: flex; gap: 10px; flex-shrink: 0;">
+        <button id="asa-cookie-decline" style="
+          padding: 8px 20px;
+          border-radius: 8px;
+          border: 1.5px solid #D1D5DB;
+          background: transparent;
+          color: #6B7280;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: inherit;
+          transition: border-color 0.15s, color 0.15s;
+        " onmouseover="this.style.borderColor='#9CA3AF';this.style.color='#374151'" onmouseout="this.style.borderColor='#D1D5DB';this.style.color='#6B7280'">
+          Decline
+        </button>
+        <button id="asa-cookie-accept" style="
+          padding: 8px 20px;
+          border-radius: 8px;
+          border: none;
+          background: #37AA35;
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: inherit;
+          transition: background 0.15s;
+        " onmouseover="this.style.background='#2d8f33'" onmouseout="this.style.background='#37AA35'">
+          Accept All
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      function getCookie(name) {
+        var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+        return match ? decodeURIComponent(match[1]) : null;
+      }
+      function setConsent(value) {
+        var expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+        document.cookie = 'asa_cookie_consent=' + value + '; expires=' + expires + '; path=/; SameSite=Lax';
+        document.getElementById('asa-cookie-banner').style.display = 'none';
+      }
+      if (!getCookie('asa_cookie_consent')) {
+        document.getElementById('asa-cookie-banner').style.display = 'block';
+      }
+      document.getElementById('asa-cookie-accept').addEventListener('click', function() { setConsent('accepted'); });
+      document.getElementById('asa-cookie-decline').addEventListener('click', function() { setConsent('declined'); });
+    })();
+  </script>
 </body>
 </html>
