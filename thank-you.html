@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>You're in — ASA Systems</title>
+  <meta name="description" content="Welcome to ASA Systems. Your 7-day free trial is live. Here's your edge while you wait for your login email." />
+  <meta name="robots" content="noindex, follow" />
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="icon" href="assets/favicon-16.png" type="image/png" sizes="16x16" />
+  <link rel="shortcut icon" href="assets/favicon.ico" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg:      '#FAFAF8',
+            surface: '#FFFFFF',
+            'surface-2': '#F3F4F6',
+            border:  '#E5E7EB',
+            primary: '#111827',
+            muted:   '#6B7280',
+            accent:  '#37AA35',
+            'accent-dark': '#2d8f33',
+            warn:    '#DC2626',
+            'mock-bg':      '#0A0F16',
+            'mock-surface': '#131A24',
+            'mock-border':  '#1F2733',
+            'mock-text':    '#F5F5F0',
+            'mock-muted':   '#8B8B7E',
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            display: ['"DM Serif Display"', 'Georgia', 'serif'],
+          },
+          letterSpacing: {
+            tightish: '-0.02em',
+            tighter2: '-0.03em',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      background: #FAFAF8;
+      color: #111827;
+      font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+      font-weight: 400;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    h1, h2, h3, h4 { letter-spacing: -0.025em; line-height: 1.08; }
+
+    .font-display { font-family: 'DM Serif Display', Georgia, serif; }
+
+    .h1-fluid { font-size: clamp(2.75rem, 5.5vw, 4.5rem); line-height: 1.02; }
+    .h2-fluid { font-size: clamp(2rem, 3.4vw, 2.75rem); line-height: 1.1; }
+
+    .faq-grid { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 260ms cubic-bezier(.2,.0,.0,1), opacity 200ms ease; opacity: 0; }
+    .faq-grid.open { grid-template-rows: 1fr; opacity: 1; }
+    .faq-inner { overflow: hidden; }
+
+    @keyframes checkScale  { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes checkStroke { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }
+    @keyframes pulseGlow   { 0%, 100% { box-shadow: 0 0 0 0 rgba(55,170,53,0.45); } 50% { box-shadow: 0 0 0 24px rgba(55,170,53,0); } }
+    .ty-check-circle { animation: checkScale 380ms cubic-bezier(.2,.0,.0,1) forwards, pulseGlow 2.2s 600ms ease-in-out 3; }
+    .ty-check-path   { stroke-dasharray: 60; stroke-dashoffset: 60; animation: checkStroke 480ms 220ms cubic-bezier(.2,.0,.0,1) forwards; }
+
+    @keyframes fadeRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .rise-1 { animation: fadeRise 480ms 200ms cubic-bezier(.2,.0,.0,1) both; }
+    .rise-2 { animation: fadeRise 480ms 320ms cubic-bezier(.2,.0,.0,1) both; }
+    .rise-3 { animation: fadeRise 480ms 440ms cubic-bezier(.2,.0,.0,1) both; }
+
+    /* Confetti-free, low-key sparkle on the target emoji in the H1 */
+    @keyframes spinSlow { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+    .target-glow { display: inline-block; }
+    .target-glow::after {
+      content: ""; position: absolute; inset: -8px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(55,170,53,0.22) 0%, rgba(55,170,53,0) 70%);
+      animation: spinSlow 8s linear infinite;
+    }
+  </style>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-bg text-primary">
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, Fragment } = React;
+
+    const AsaWordmark = ({ className = "h-8 w-auto", invert = false }) => (
+      <img
+        src="assets/asa-systems-wordmark.png"
+        alt="ASA Systems"
+        className={`${className} ${invert ? 'brightness-0 invert' : ''}`}
+        draggable={false}
+      />
+    );
+
+    const SI = ({ children }) => (
+      <span style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontStyle: 'italic', fontWeight: 500 }}>{children}</span>
+    );
+
+    const Icon = ({ children, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+        className={className} aria-hidden="true">
+        {children}
+      </svg>
+    );
+    const CheckIcon       = (p) => <Icon {...p}><polyline points="5 12 10 17 19 7"/></Icon>;
+    const ArrowRightIcon  = (p) => <Icon {...p}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></Icon>;
+    const ChevronDownIcon = (p) => <Icon {...p}><polyline points="6 9 12 15 18 9"/></Icon>;
+    const MailIcon        = (p) => <Icon {...p}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 7 9-7"/></Icon>;
+    const DownloadIcon    = (p) => <Icon {...p}><path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 21h14"/></Icon>;
+    const PlugIcon        = (p) => <Icon {...p}><path d="M9 2v6"/><path d="M15 2v6"/><path d="M7 8h10v4a5 5 0 0 1-10 0z"/><path d="M12 17v5"/></Icon>;
+    const ZapIcon         = (p) => <Icon {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></Icon>;
+    const ShieldIcon      = (p) => <Icon {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></Icon>;
+    const TrendingDownIcon= (p) => <Icon {...p}><polyline points="3 7 9 13 13 9 21 17"/><polyline points="15 17 21 17 21 11"/></Icon>;
+
+    /* Read query string for personalised name/email/plan */
+    const params = new URLSearchParams(window.location.search);
+    const firstName = (params.get('name') || '').trim();
+    const userEmail = (params.get('email') || '').trim();
+    const planParam = (params.get('plan')  || '').toLowerCase();
+
+    const PLAN_NAMES = {
+      starter: 'ASA Starter',
+      pro:     'ASA Pro',
+      scale:   'ASA Scale',
+    };
+    const planLabel = PLAN_NAMES[planParam] || null;
+
+    /* ============================================================
+       Hero — exclusive welcome, not a generic confirmation.
+       Big serif H1, animated check, target emoji with glow,
+       plan badge if we have one from the quiz/register flow.
+       ============================================================ */
+    const Hero = () => (
+      <section className="border-b border-border">
+        <div className="max-w-3xl mx-auto px-6 pt-20 pb-16 md:pt-28 md:pb-20 text-center">
+          <div className="ty-check-circle inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent text-bg mx-auto" aria-hidden="true">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline className="ty-check-path" points="5 12 10 17 19 7"/>
+            </svg>
+          </div>
+          <p className="rise-1 mt-7 text-xs font-semibold text-accent tracking-[0.22em] uppercase">
+            Welcome — you're in
+          </p>
+          <h1 className="rise-1 mt-3 h1-fluid font-bold text-primary tracking-tighter2">
+            {firstName ? <>You're in, {firstName}. <span className="relative inline-block">🎯</span></> : <>You're in. <span className="relative inline-block">🎯</span></>}
+          </h1>
+          <p className="rise-2 mt-6 text-lg md:text-xl text-primary/80 leading-relaxed max-w-2xl mx-auto">
+            Your 7-day free trial is live. No card. No drip campaign. Just the software.
+          </p>
+          {planLabel && (
+            <p className="rise-3 mt-6 inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-accent border border-accent/40 bg-accent/10 rounded-full px-3 py-1.5">
+              <CheckIcon className="w-3.5 h-3.5" /> Plan selected: {planLabel}
+            </p>
+          )}
+        </div>
+      </section>
+    );
+
+    /* ============================================================
+       "While you wait — here's your edge"
+       Three insider observations from ASA's attribution data.
+       Not features. Trader advice. The point is to make the
+       reader feel: these people know what they're talking about.
+       ============================================================ */
+    const EdgeTips = () => {
+      const tips = [
+        {
+          icon: TrendingDownIcon,
+          title: "Most of your profit comes from 1–2 providers. The rest are noise.",
+          body: <>Across the ASA leaderboard, <span className="text-primary font-semibold">~80% of profitable months come from a trader's top two providers</span>. Most people follow 5–8 channels and trust them equally. They shouldn't. Use the Leaderboard tab in week one. Cut anyone below positive R-multiple at day 30.</>,
+        },
+        {
+          icon: ShieldIcon,
+          title: "Set risk to 0.5% per trade for the first week. Let the data tell you when to scale.",
+          body: <>Every successful ASA trader we've watched does the same thing in the first 7 days: <span className="text-primary font-semibold">tiny size, full automation, watch the data come in</span>. Once you've seen a provider hit 30+ trades with positive expectancy, scale your risk on that provider specifically. Not before.</>,
+        },
+        {
+          icon: ZapIcon,
+          title: "The traders making the most aren't the ones with the most signals.",
+          body: <>They're the ones who <span className="text-primary font-semibold">cut the bottom 3 providers ruthlessly every month</span>. Sharpe ratio matters more than win rate. ASA shows you both — pay attention to Sharpe. Win rate lies; Sharpe doesn't.</>,
+        },
+      ];
+      return (
+        <section className="border-b border-border bg-surface">
+          <div className="max-w-4xl mx-auto px-6 py-24 md:py-28">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold text-accent tracking-widest uppercase">While you wait for your login email</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary">Here's your <SI>edge</SI>.</h2>
+              <p className="mt-5 text-base md:text-lg text-primary/75 leading-relaxed">
+                Three things we wish every new trader knew before they connected ASA. They'll save you weeks.
+              </p>
+            </div>
+
+            <div className="mt-12 space-y-5">
+              {tips.map(({ icon: I, title, body }, i) => (
+                <div key={i} className="grid grid-cols-[auto_1fr] gap-5 md:gap-6 items-start border border-border rounded-2xl p-6 md:p-7 bg-bg/60 hover:border-accent/40 transition-colors">
+                  <div className="w-11 h-11 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent shrink-0">
+                    <I className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-lg md:text-xl font-bold text-primary leading-snug">{title}</h3>
+                    <p className="mt-2.5 text-primary/80 leading-relaxed">{body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* ============================================================
+       Three steps for after the login email arrives
+       ============================================================ */
+    const WhatHappensNext = () => {
+      const steps = [
+        {
+          n: "01",
+          icon: MailIcon,
+          title: "Check your email",
+          body: userEmail
+            ? <>Your login link and setup guide just landed at <span className="text-primary font-semibold break-all">{userEmail}</span>. Check your inbox — and your spam folder. Mark it as "not spam" if it's there; it'll save you next time.</>
+            : <>Your login link and setup guide are on their way to your inbox. Check spam too — and mark it "not spam" if it's there.</>,
+          cta: null,
+        },
+        {
+          n: "02",
+          icon: DownloadIcon,
+          title: "Download & connect MT5",
+          body: <>Open ASA Systems and connect your MT5 broker. About three minutes, fully guided. Your credentials never leave your machine.</>,
+          cta: { href: "/download?source=thank-you", label: "Download ASA Systems" },
+        },
+        {
+          n: "03",
+          icon: PlugIcon,
+          title: "Paste your first signal channel",
+          body: <>One Telegram or Discord channel. ASA starts listening immediately and back-attributes your last 90 days of MT5 trades inside a minute. That first leaderboard view is the moment most traders make their best decision in years.</>,
+          cta: null,
+        },
+      ];
+      return (
+        <section className="border-b border-border">
+          <div className="max-w-4xl mx-auto px-6 py-24 md:py-28">
+            <div className="max-w-2xl mb-12">
+              <p className="text-xs font-semibold text-muted tracking-widest uppercase">What happens next</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary">Three steps. <SI>Under ten minutes.</SI></h2>
+            </div>
+            <div className="space-y-10">
+              {steps.map(({ n, icon: I, title, body, cta }) => (
+                <div key={n} className="grid grid-cols-[auto_1fr] gap-6 items-start">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent">
+                      <I className="w-5 h-5" />
+                    </div>
+                    <span className="text-[11px] font-bold text-accent tracking-widest">{n}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-xl md:text-2xl font-bold text-primary">{title}</h3>
+                    <p className="mt-2 text-primary/80 leading-relaxed">{body}</p>
+                    {cta && (
+                      <a
+                        href={cta.href}
+                        className="mt-4 inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-5 py-3 rounded-md transition-colors text-sm shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]"
+                      >
+                        {cta.label}
+                        <ArrowRightIcon className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    const SocialProof = () => {
+      const quotes = [
+        { name: "Mark · FTMO funded",   quote: "Within an hour I knew which two of my five channels were actually making money. Cut the dead weight, doubled the winners." },
+        { name: "Sasha · FundedNext",   quote: "The split-signal protection alone is worth it. No more naked positions while I'm waiting on a stop loss." },
+        { name: "Daniel · The5ers",    quote: "Setup took fifteen minutes. The leaderboard populated inside a minute of me connecting MT5. Wild." },
+      ];
+      return (
+        <section className="border-b border-border bg-surface">
+          <div className="max-w-5xl mx-auto px-6 py-20 md:py-24">
+            <p className="text-center text-sm text-muted">
+              You're joining traders from <span className="text-primary font-semibold">FTMO</span>, <span className="text-primary font-semibold">FundedNext</span> and <span className="text-primary font-semibold">The5ers</span> already running ASA Systems.
+            </p>
+            <div className="mt-10 grid md:grid-cols-3 gap-4">
+              {quotes.map((q) => (
+                <figure key={q.name} className="bg-bg border border-border rounded-xl p-6 shadow-sm">
+                  <blockquote className="text-sm text-primary/85 leading-relaxed">
+                    "{q.quote}"
+                  </blockquote>
+                  <figcaption className="mt-4 text-xs font-semibold text-muted tracking-widest uppercase">
+                    {q.name}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    const FAQ = () => {
+      const items = [
+        { q: "When does my free trial start?", a: "Right now. Your 7 days began the moment your account was created — no waiting list, no activation lag." },
+        { q: "Do I need to enter card details for the trial?", a: "No. We don't ask for payment details until the end of your 7-day trial, and only if you want to keep going." },
+        { q: "Can I cancel any time?", a: "Yes — one click from your dashboard, no friction. Your historical data stays exportable forever." },
+        { q: "What if I get stuck setting up?", a: "Our in-app guide covers every step. If you hit a wall, email christoffermoshiri@gmail.com — we reply within 2 hours on business days." },
+      ];
+      const [open, setOpen] = useState(() => new Set([0]));
+      const toggle = (i) => setOpen(prev => {
+        const next = new Set(prev);
+        if (next.has(i)) next.delete(i); else next.add(i);
+        return next;
+      });
+      return (
+        <section className="border-b border-border">
+          <div className="max-w-3xl mx-auto px-6 py-20 md:py-24">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold text-muted tracking-widest uppercase">FAQ</p>
+              <h2 className="mt-2 h2-fluid font-bold text-primary"><SI>Quick</SI> answers.</h2>
+            </div>
+            <div className="mt-8">
+              {items.map((it, i) => {
+                const isOpen = open.has(i);
+                return (
+                  <div key={i} className={`${i === 0 ? 'border-t border-border' : ''} border-b border-border`}>
+                    <button
+                      onClick={() => toggle(i)}
+                      className="w-full flex items-start justify-between gap-6 py-5 text-left group"
+                      aria-expanded={isOpen}
+                    >
+                      <span className="text-base md:text-lg font-semibold text-primary group-hover:text-accent transition-colors">{it.q}</span>
+                      <span className={`shrink-0 mt-1 text-muted transition-transform duration-200 ${isOpen ? 'rotate-180 text-accent' : ''}`}>
+                        <ChevronDownIcon className="w-5 h-5" />
+                      </span>
+                    </button>
+                    <div className={`faq-grid ${isOpen ? 'open' : ''}`}>
+                      <div className="faq-inner">
+                        <p className="text-primary/75 pb-5 pr-10 max-w-2xl leading-relaxed">{it.a}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    const FinalCTA = () => (
+      <section className="border-b border-border bg-surface">
+        <div className="max-w-3xl mx-auto px-6 py-24 md:py-28 text-center">
+          <h2 className="h2-fluid font-bold text-primary tracking-tighter2">
+            Ready to <SI>go live</SI>?
+          </h2>
+          <p className="mt-6 text-lg text-primary/80 leading-relaxed">
+            Everything's configured. Open ASA and connect your first channel.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href="/dashboard?source=thank-you"
+              className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-8 py-4 rounded-md transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)]"
+            >
+              Open ASA Systems
+              <ArrowRightIcon className="w-4 h-4" />
+            </a>
+            <a
+              href="/download?source=thank-you-bottom"
+              className="inline-flex items-center justify-center gap-2 border border-border hover:border-primary/40 text-primary font-semibold px-6 py-4 rounded-md transition-colors"
+            >
+              Download installer
+            </a>
+          </div>
+        </div>
+      </section>
+    );
+
+    const Footer = () => (
+      <footer className="bg-primary text-bg">
+        <div className="max-w-6xl mx-auto px-6 py-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+            <div className="col-span-2 md:col-span-1">
+              <AsaWordmark className="h-7 w-auto" invert />
+              <p className="mt-5 text-sm text-bg/80 max-w-xs leading-relaxed">Signal attribution for serious traders.</p>
+              <p className="mt-6 text-xs text-bg/55">ASA Trading Systems Ltd</p>
+              <p className="text-xs text-bg/55">Registered in England and Wales</p>
+              <p className="mt-3 text-xs text-bg/55">© 2026</p>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-bg/55">Product</p>
+              <ul className="mt-4 space-y-2 text-sm">
+                <li><a href="index.html#how-it-works" className="text-bg/85 hover:text-bg">How it works</a></li>
+                <li><a href="index.html#features"     className="text-bg/85 hover:text-bg">Features</a></li>
+                <li><a href="index.html#pricing"      className="text-bg/85 hover:text-bg">Pricing</a></li>
+                <li><a href="index.html#faq"          className="text-bg/85 hover:text-bg">FAQ</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-bg/55">Company</p>
+              <ul className="mt-4 space-y-2 text-sm">
+                <li><a href="/privacy"  className="text-bg/85 hover:text-bg">Privacy</a></li>
+                <li><a href="/terms"    className="text-bg/85 hover:text-bg">Terms</a></li>
+                <li><a href="/risk"     className="text-bg/85 hover:text-bg">Risk Disclosure</a></li>
+                <li><a href="/security" className="text-bg/85 hover:text-bg">Security</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-bg/55">Support</p>
+              <ul className="mt-4 space-y-2 text-sm">
+                <li><a href="mailto:christoffermoshiri@gmail.com" className="text-bg/85 hover:text-bg break-all">christoffermoshiri@gmail.com</a></li>
+                <li><a href="/status" className="text-bg/85 hover:text-bg">Status</a></li>
+                <li><a href="/docs"   className="text-bg/85 hover:text-bg">Documentation</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 pt-8 border-t border-bg/15">
+            <p className="text-xs text-bg/55 leading-relaxed max-w-4xl">
+              Trading CFDs carries substantial risk. 74–89% of retail accounts lose money. ASA Systems provides software tools only, not investment advice. Past performance does not guarantee future results.
+            </p>
+          </div>
+        </div>
+      </footer>
+    );
+
+    const App = () => (
+      <Fragment>
+        <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-border">
+          <nav className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="index.html" className="flex items-center" aria-label="ASA Systems home">
+              <AsaWordmark className="h-7 sm:h-8 w-auto" />
+            </a>
+            <a
+              href="/dashboard?source=thank-you-nav"
+              className="inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold text-sm px-4 py-2 rounded-md transition-colors"
+            >
+              Open dashboard
+            </a>
+          </nav>
+        </header>
+        <main>
+          <Hero />
+          <EdgeTips />
+          <WhatHappensNext />
+          <SocialProof />
+          <FAQ />
+          <FinalCTA />
+        </main>
+        <Footer />
+      </Fragment>
+    );
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
