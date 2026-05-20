@@ -1292,7 +1292,7 @@
                 </div>
 
                 <p className="mt-4 text-xs text-muted/80">
-                  No card required · Any MT5 broker · 5-minute setup · 14-day trial
+                  No card required · Any MT5 broker · 5-minute setup · 7-day trial
                 </p>
                 <p className="mt-1.5 text-xs text-muted/70">
                   MT5 credentials encrypted locally — never transmitted to our servers.
@@ -1765,7 +1765,7 @@
                   <ArrowRightIcon className="w-4 h-4" />
                 </button>
                 <p className="mt-3 text-xs text-muted">
-                  14-day trial · Cancel anytime
+                  7-day trial · Cancel anytime
                 </p>
               </div>
 
@@ -2708,11 +2708,11 @@
             <div className="max-w-3xl">
               <p className="text-xs font-bold tracking-[0.18em] uppercase text-muted mb-2">Pricing</p>
               <h2 className="mt-2 h2-fluid font-bold text-primary">Simple pricing. <SI>No surprises.</SI></h2>
-              <p className="mt-4 md:mt-6 text-base md:text-lg text-primary/80">14-day free trial on every plan. Cancel any time.</p>
+              <p className="mt-4 md:mt-6 text-base md:text-lg text-primary/80">7-day free trial on every plan. Cancel any time.</p>
               <div className="mt-6 inline-flex items-start gap-3 border border-accent/30 bg-accent/[0.05] rounded-md px-4 py-3 max-w-xl">
                 <CheckIcon className="w-4 h-4 mt-0.5 text-accent shrink-0" />
                 <p className="text-sm text-primary/85 leading-snug">
-                  All plans start with a 14-day trial. No card stored until you choose to subscribe.
+                  All plans start with a 7-day trial. No card stored until you choose to subscribe.
                 </p>
               </div>
             </div>
@@ -2781,7 +2781,7 @@
                           : 'bg-accent hover:bg-accent/90 text-bg shadow-[0_8px_24px_-8px_rgba(55,170,53,0.6)]'
                       }`}
                     >
-                      Start 14-day Free Trial
+                      Start 7-day Free Trial
                     </button>
                     <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-muted">
                       <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -2825,7 +2825,7 @@
 
             <div className="mt-10 flex flex-col items-center gap-3">
               <p className="text-center text-sm text-muted">
-                All plans include a 14-day free trial. Cancel anytime through Stripe Customer Portal.
+                All plans include a 7-day free trial. Cancel anytime through Stripe Customer Portal.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted">
                 <span className="inline-flex items-center gap-1.5">
@@ -2886,7 +2886,7 @@
         { q: "Do I need to keep my computer on?", a: "Yes. ASA runs locally on your machine. If your computer sleeps or loses internet, signal copying pauses. For 24/7 unattended automation, a Windows VPS (we recommend Contabo or Hetzner) running ASA is the standard setup." },
         { q: "Why bring your own API key?", a: "Cost transparency and privacy. You pay your AI provider directly at their published rates (typically fractions of a penny per signal parse). Your data goes to the provider you choose, not through our servers. You can also use local Ollama with no external calls at all." },
         { q: "What prop firm rules does ASA support?", a: "Pre-loaded rule sets for FTMO, FundedNext, MyForexFunds, The5ers, E8 Funding, Funded Engineer, Apex Trader Funding, True Forex Funds, City Traders Imperium, TopStep, Lux Trading Firm, Funder Pro, plus a generic configurable preset." },
-        { q: "What does the 14-day trial include?", a: "Everything. Full access to all features of your chosen plan for 14 days. At the end of the trial, the app switches to read-only mode — you can review your data but cannot place new trades until you subscribe." },
+        { q: "What does the 7-day trial include?", a: "Everything. Full access to all features of your chosen plan for 7 days. At the end of the trial, the app switches to read-only mode — you can review your data but cannot place new trades until you subscribe." },
         { q: "What happens after the trial?", a: "The app enters read-only mode. Your historical data and leaderboard are preserved. You can subscribe at any time to re-enable live trading." },
         { q: "How do I cancel?", a: "Through the Stripe Customer Portal — one click, no questions asked. Your subscription stops at the end of the billing period. We do not make cancellation difficult." },
         { q: "Is ASA regulated by the FCA?", a: "No. ASA Systems is software, not a financial service. We do not provide investment advice, manage money, or execute trades on your behalf — you configure the rules, and the software follows them. If you need regulated financial advice, speak to an FCA-authorised adviser." },
@@ -2950,7 +2950,7 @@
               Stop <SI>guessing</SI> which signals work.
             </h2>
             <p className="mt-6 md:mt-8 text-base md:text-xl text-primary/80 max-w-2xl mx-auto leading-relaxed">
-              Start your 14-day free trial. No card required. Cancel anytime.
+              Start your 7-day free trial. No card required. Cancel anytime.
             </p>
             <div className="mt-10 md:mt-12 flex justify-center">
               <a
@@ -2971,7 +2971,7 @@
               </button>
             </p>
             <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-8 text-sm text-muted">
-              <span className="inline-flex items-center gap-2"><CheckIcon className="w-4 h-4 text-accent" /> 14-day free trial</span>
+              <span className="inline-flex items-center gap-2"><CheckIcon className="w-4 h-4 text-accent" /> 7-day free trial</span>
               <span className="inline-flex items-center gap-2"><CheckIcon className="w-4 h-4 text-accent" /> Cancel anytime</span>
               <span className="inline-flex items-center gap-2"><CheckIcon className="w-4 h-4 text-accent" /> Local execution</span>
             </div>
@@ -3495,7 +3495,7 @@
                       <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-bold text-primary tracking-tighter2">{plan.price}</span>
                         <span className="text-sm text-muted">{plan.cadence}</span>
-                        <span className="ml-auto text-[11px] font-semibold tracking-widest uppercase text-accent">14-day free trial</span>
+                        <span className="ml-auto text-[11px] font-semibold tracking-widest uppercase text-accent">7-day free trial</span>
                       </div>
                       <ul className="mt-5 space-y-2.5">
                         {plan.bullets.map((b) => (
@@ -3511,7 +3511,7 @@
                       href={registerHref}
                       className="mt-6 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3.5 rounded-lg transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.6)] w-full"
                     >
-                      Start {plan.name} free for 14 days
+                      Start {plan.name} free for 7 days
                       <ArrowRightIcon className="w-4 h-4" />
                     </a>
                     <button
