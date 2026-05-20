@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — ASA Terminal</title>
+  <meta name="description" content="Privacy Policy for ASA Terminal by ASA Systems." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    /* ── Reset & base ────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0d12;
+      --surface:   #111722;
+      --border:    #1e2a3a;
+      --accent:    #00c896;
+      --accent-dim:#00a87e;
+      --text:      #e4eaf2;
+      --muted:     #8a9ab5;
+      --danger:    #e05252;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      min-height: 100vh;
+    }
+
+    /* ── Top nav ─────────────────────────────────────────────────── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(10,13,18,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.3px;
+    }
+
+    .logo svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .back-link {
+      font-size: 14px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--text); }
+
+    /* ── Layout ──────────────────────────────────────────────────── */
+    .page-wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    /* ── Hero ────────────────────────────────────────────────────── */
+    .hero {
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero h1 {
+      font-size: clamp(26px, 4vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .hero-meta strong { color: var(--text); }
+
+    /* ── Table of contents ───────────────────────────────────────── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin-bottom: 48px;
+    }
+
+    .toc h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+
+    .toc ol {
+      list-style: decimal;
+      padding-left: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 24px;
+    }
+
+    @media (max-width: 540px) { .toc ol { grid-template-columns: 1fr; } }
+
+    .toc a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.15s;
+    }
+    .toc a:hover { color: var(--accent); }
+
+    /* ── Sections ────────────────────────────────────────────────── */
+    section { margin-bottom: 48px; }
+
+    section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+
+    section h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 20px 0 8px;
+    }
+
+    p { margin-bottom: 14px; color: var(--muted); }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ul, ol {
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+
+    li { color: var(--muted); margin-bottom: 6px; }
+
+    /* ── Data table ──────────────────────────────────────────────── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 20px;
+      font-size: 14px;
+      overflow-x: auto;
+      display: block;
+    }
+
+    .data-table th {
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      vertical-align: top;
+    }
+
+    .data-table tr:hover td { background: rgba(255,255,255,0.015); }
+
+    /* ── Callout ─────────────────────────────────────────────────── */
+    .callout {
+      background: rgba(0,200,150,0.06);
+      border: 1px solid rgba(0,200,150,0.25);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 20px 0;
+    }
+
+    .callout p { color: var(--text); margin: 0; font-size: 15px; }
+    .callout strong { color: var(--accent); }
+
+    /* ── Rights grid ─────────────────────────────────────────────── */
+    .rights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .right-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .right-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .right-card p {
+      font-size: 13px;
+      margin: 0;
+      color: var(--muted);
+    }
+
+    /* ── Contact card ────────────────────────────────────────────── */
+    .contact-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      margin-top: 16px;
+    }
+
+    .contact-card p { margin-bottom: 6px; }
+    .contact-card p:last-child { margin: 0; }
+
+    /* ── Footer ──────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 24px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--muted); margin: 0 10px; }
+    footer a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ───────────────────────────────────────────────────────── -->
+<header>
+  <a href="/" class="logo">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="7" fill="#00c896" fill-opacity="0.12"/>
+      <path d="M7 22L13 10L16 16L19 12L22 22" stroke="#00c896" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="16" cy="16" r="2" fill="#00c896"/>
+    </svg>
+    ASA <span>Terminal</span>
+  </a>
+  <a href="/" class="back-link">
+    ← Back to home
+  </a>
+</header>
+
+<!-- ── Main content ──────────────────────────────────────────────────── -->
+<main class="page-wrap">
+
+  <div class="hero">
+    <h1>Privacy Policy</h1>
+    <div class="hero-meta">
+      <span><strong>Controller:</strong> ASA Trading Systems Ltd (trading as ASA Systems)</span>
+      <span><strong>Last updated:</strong> 20 May 2026</span>
+      <span><strong>Effective:</strong> 20 May 2026</span>
+    </div>
+  </div>
+
+  <!-- ── Table of contents ──────────────────────────────────────────── -->
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1">Who we are</a></li>
+      <li><a href="#s2">Data we collect</a></li>
+      <li><a href="#s3">How we use your data</a></li>
+      <li><a href="#s4">Legal bases (GDPR)</a></li>
+      <li><a href="#s5">Data stored on your device</a></li>
+      <li><a href="#s6">Third-party processors</a></li>
+      <li><a href="#s7">International transfers</a></li>
+      <li><a href="#s8">Retention</a></li>
+      <li><a href="#s9">Your rights</a></li>
+      <li><a href="#s10">Cookies &amp; analytics</a></li>
+      <li><a href="#s11">Children</a></li>
+      <li><a href="#s12">Changes</a></li>
+      <li><a href="#s13">Contact &amp; complaints</a></li>
+    </ol>
+  </div>
+
+  <!-- ── 1. Who we are ──────────────────────────────────────────────── -->
+  <section id="s1">
+    <h2>1. Who we are</h2>
+    <p>
+      ASA Terminal is a Windows desktop application developed and operated by
+      <strong>ASA Trading Systems Ltd</strong>, trading as <strong>ASA Systems</strong>,
+      a company incorporated in England and Wales, registered in Bristol, United Kingdom.
+    </p>
+    <p>
+      ASA Trading Systems Ltd is the <strong>data controller</strong> for personal data processed
+      in connection with the ASA Terminal application and website (<a href="https://asasystems.app">asasystems.app</a>).
+    </p>
+    <p>Contact: <a href="mailto:christoffermoshiri@gmail.com">christoffermoshiri@gmail.com</a></p>
+  </section>
+
+  <!-- ── 2. Data we collect ─────────────────────────────────────────── -->
+  <section id="s2">
+    <h2>2. Data we collect</h2>
+
+    <h3>2.1 Account data</h3>
+    <p>When you create an account we collect:</p>
+    <ul>
+      <li>Email address and display name</li>
+      <li>Password (stored as a bcrypt hash — we never store your plaintext password)</li>
+      <li>OAuth identifiers if you sign in via Google, Discord, or Telegram (we receive a unique ID and your public profile email from those providers)</li>
+      <li>Billing address and payment method metadata provided by Stripe (we do not store card numbers; Stripe holds those)</li>
+      <li>Subscription tier and status</li>
+      <li>Timestamps: account created, last login, password last changed</li>
+    </ul>
+
+    <h3>2.2 Product telemetry (opt-in)</h3>
+    <p>
+      ASA Terminal includes optional, anonymised product analytics via PostHog. This is
+      <strong>disabled by default</strong> and only activated if you opt in.
+      When enabled, we collect feature usage counts and error rates — no trading data,
+      no signal content, no credentials, no personally identifiable information.
+    </p>
+
+    <h3>2.3 Support communications</h3>
+    <p>
+      If you contact us by email, we retain the content of that correspondence to
+      resolve your query and improve the product.
+    </p>
+
+    <h3>2.4 Data we do NOT collect from the application</h3>
+    <div class="callout">
+      <p>
+        <strong>Your trading data stays on your machine.</strong> Trade records, signal history,
+        journal notes, broker credentials, Telegram/Discord session tokens, and MetaTrader 5
+        account details are stored exclusively in a local SQLite database on your device.
+        None of this data is transmitted to ASA Systems servers.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── 3. How we use your data ───────────────────────────────────── -->
+  <section id="s3">
+    <h2>3. How we use your data</h2>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Purpose</th>
+          <th>Data used</th>
+          <th>Legal basis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Create and manage your account</td>
+          <td>Email, display name, hashed password, OAuth IDs</td>
+          <td>Contract</td>
+        </tr>
+        <tr>
+          <td>Authenticate you on login</td>
+          <td>Email, hashed password, JWT tokens</td>
+          <td>Contract</td>
+        </tr>
+        <tr>
+          <td>Process payments and manage your subscription</td>
+          <td>Email, Stripe customer ID, billing status</td>
+          <td>Contract</td>
+        </tr>
+        <tr>
+          <td>Send transactional emails (welcome, billing, password reset)</td>
+          <td>Email address</td>
+          <td>Contract / Legitimate interest</td>
+        </tr>
+        <tr>
+          <td>Enforce subscription entitlements</td>
+          <td>User ID, subscription tier</td>
+          <td>Contract</td>
+        </tr>
+        <tr>
+          <td>Detect and prevent fraud or abuse</td>
+          <td>Login timestamps, rate limit counters</td>
+          <td>Legitimate interest</td>
+        </tr>
+        <tr>
+          <td>Product analytics (opt-in only)</td>
+          <td>Anonymised feature usage events</td>
+          <td>Consent</td>
+        </tr>
+        <tr>
+          <td>Respond to support requests</td>
+          <td>Email, correspondence content</td>
+          <td>Legitimate interest</td>
+        </tr>
+        <tr>
+          <td>Comply with legal obligations</td>
+          <td>As required by applicable law</td>
+          <td>Legal obligation</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── 4. Legal bases ─────────────────────────────────────────────── -->
+  <section id="s4">
+    <h2>4. Legal bases (UK &amp; EU GDPR)</h2>
+    <p>We rely on the following legal bases under UK GDPR (and, where applicable, EU GDPR) Article 6:</p>
+    <ul>
+      <li>
+        <strong>Contract (Art. 6(1)(b)):</strong> Processing necessary to provide the ASA Terminal
+        service you signed up for — account management, authentication, subscription handling.
+      </li>
+      <li>
+        <strong>Legitimate interests (Art. 6(1)(f)):</strong> Security monitoring, fraud detection,
+        improving service reliability, and responding to support queries. We have balanced these
+        interests against your rights and concluded they are proportionate.
+      </li>
+      <li>
+        <strong>Legal obligation (Art. 6(1)(c)):</strong> Compliance with applicable UK law,
+        tax obligations, and any court or regulatory orders.
+      </li>
+      <li>
+        <strong>Consent (Art. 6(1)(a)):</strong> Optional product analytics. You can withdraw
+        consent at any time from within the application settings.
+      </li>
+    </ul>
+  </section>
+
+  <!-- ── 5. Data stored on device ──────────────────────────────────── -->
+  <section id="s5">
+    <h2>5. Data stored on your device</h2>
+    <p>
+      The vast majority of data generated by ASA Terminal is stored locally on your Windows device
+      in a SQLite database. This includes:
+    </p>
+    <ul>
+      <li>Trade records, signal history, and provider attribution data</li>
+      <li>Journal entries, notes, and screenshots</li>
+      <li>Broker connection configuration (Fernet-encrypted at rest)</li>
+      <li>Telegram and Discord session credentials (encrypted)</li>
+      <li>Risk management settings and backtesting results</li>
+    </ul>
+    <p>
+      You are responsible for the security of your own device. ASA Systems does not have
+      remote access to this data and cannot recover it if your device is lost or damaged.
+      We recommend maintaining your own backups.
+    </p>
+  </section>
+
+  <!-- ── 6. Third-party processors ─────────────────────────────────── -->
+  <section id="s6">
+    <h2>6. Third-party processors</h2>
+    <p>
+      We use the following sub-processors. All have signed data processing agreements and
+      provide adequate safeguards under UK/EU GDPR:
+    </p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Processor</th>
+          <th>Purpose</th>
+          <th>Data shared</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Supabase</strong></td>
+          <td>Authentication, user accounts, subscription records</td>
+          <td>Email, user ID, subscription status</td>
+          <td>EU (AWS eu-west-2)</td>
+        </tr>
+        <tr>
+          <td><strong>Stripe</strong></td>
+          <td>Payment processing and subscription billing</td>
+          <td>Email, billing address, payment method metadata</td>
+          <td>USA (SCCs applied)</td>
+        </tr>
+        <tr>
+          <td><strong>Resend</strong></td>
+          <td>Transactional email delivery</td>
+          <td>Email address, email content</td>
+          <td>USA (SCCs applied)</td>
+        </tr>
+        <tr>
+          <td><strong>PostHog</strong></td>
+          <td>Product analytics (opt-in only)</td>
+          <td>Anonymised usage events (no PII)</td>
+          <td>EU (self-hosted option available)</td>
+        </tr>
+        <tr>
+          <td><strong>Vercel</strong></td>
+          <td>Hosting of the marketing website</td>
+          <td>IP address, browser headers (standard web logs)</td>
+          <td>Global CDN</td>
+        </tr>
+        <tr>
+          <td><strong>Groq / Google Gemini / Anthropic / Ollama</strong></td>
+          <td>AI signal parsing fallback (processes only the signal text you receive — no account data)</td>
+          <td>Signal message text only (if AI parsing is enabled and triggered)</td>
+          <td>USA / varies — see respective providers' privacy policies</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      We do not sell, rent, or share your personal data with any third party for their own
+      marketing purposes.
+    </p>
+  </section>
+
+  <!-- ── 7. International transfers ────────────────────────────────── -->
+  <section id="s7">
+    <h2>7. International transfers</h2>
+    <p>
+      Some of our processors are located outside the UK/EEA (notably Stripe and Resend in the USA).
+      Where we transfer personal data outside the UK, we rely on the UK International Data Transfer
+      Agreement (IDTA) or Standard Contractual Clauses (SCCs) as appropriate to ensure your data
+      receives a level of protection equivalent to UK GDPR.
+    </p>
+  </section>
+
+  <!-- ── 8. Retention ───────────────────────────────────────────────── -->
+  <section id="s8">
+    <h2>8. Retention</h2>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Data category</th>
+          <th>Retention period</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Account records</td>
+          <td>Duration of your account + 30 days after deletion request</td>
+          <td>Contractual obligation; deletion grace period</td>
+        </tr>
+        <tr>
+          <td>Billing records</td>
+          <td>7 years from the relevant transaction</td>
+          <td>UK tax and accounting law</td>
+        </tr>
+        <tr>
+          <td>Security logs (login, rate-limit events)</td>
+          <td>90 days</td>
+          <td>Fraud and abuse detection</td>
+        </tr>
+        <tr>
+          <td>Support correspondence</td>
+          <td>3 years from last interaction</td>
+          <td>Legitimate interest (resolving recurring issues)</td>
+        </tr>
+        <tr>
+          <td>Anonymised analytics</td>
+          <td>Up to 2 years</td>
+          <td>Product improvement</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      You can request deletion of your account at any time. See Section 9 for your rights.
+    </p>
+  </section>
+
+  <!-- ── 9. Your rights ─────────────────────────────────────────────── -->
+  <section id="s9">
+    <h2>9. Your rights</h2>
+    <p>Under UK GDPR you have the following rights regarding your personal data:</p>
+    <div class="rights-grid">
+      <div class="right-card">
+        <h4>Access (Art. 15)</h4>
+        <p>Request a copy of all personal data we hold about you.</p>
+      </div>
+      <div class="right-card">
+        <h4>Rectification (Art. 16)</h4>
+        <p>Ask us to correct inaccurate or incomplete data.</p>
+      </div>
+      <div class="right-card">
+        <h4>Erasure (Art. 17)</h4>
+        <p>Request deletion of your account and associated personal data.</p>
+      </div>
+      <div class="right-card">
+        <h4>Portability (Art. 20)</h4>
+        <p>Receive your data in a machine-readable format (JSON/CSV).</p>
+      </div>
+      <div class="right-card">
+        <h4>Restriction (Art. 18)</h4>
+        <p>Ask us to restrict processing of your data in certain circumstances.</p>
+      </div>
+      <div class="right-card">
+        <h4>Objection (Art. 21)</h4>
+        <p>Object to processing based on legitimate interests.</p>
+      </div>
+      <div class="right-card">
+        <h4>Withdraw consent</h4>
+        <p>Opt out of analytics at any time in the app settings.</p>
+      </div>
+      <div class="right-card">
+        <h4>Complaint</h4>
+        <p>Lodge a complaint with the ICO (ico.org.uk).</p>
+      </div>
+    </div>
+    <p>
+      You can exercise your rights for access, portability, and erasure directly within ASA Terminal
+      (Settings → Account → Privacy). For other requests or questions, contact us at
+      <a href="mailto:christoffermoshiri@gmail.com">christoffermoshiri@gmail.com</a>.
+      We will respond within <strong>30 days</strong>.
+    </p>
+  </section>
+
+  <!-- ── 10. Cookies & analytics ────────────────────────────────────── -->
+  <section id="s10">
+    <h2>10. Cookies &amp; analytics</h2>
+
+    <h3>10.1 Website (asasystems.app)</h3>
+    <p>
+      Our marketing website uses only strictly necessary cookies required for security and
+      session management. We do not use third-party tracking cookies or advertising pixels on
+      the marketing site.
+    </p>
+
+    <h3>10.2 Application analytics (PostHog)</h3>
+    <p>
+      The desktop application can optionally send anonymised product telemetry to PostHog.
+      This feature is <strong>off by default</strong>. If you enable it, PostHog receives
+      events such as "feature X opened" or "error Y occurred" — no trading data, no signal
+      content, and no personal identifiers are included in these events.
+    </p>
+    <p>
+      You can enable or disable this at any time in the application settings.
+    </p>
+  </section>
+
+  <!-- ── 11. Children ───────────────────────────────────────────────── -->
+  <section id="s11">
+    <h2>11. Children</h2>
+    <p>
+      ASA Terminal is intended for adults aged 18 and over. We do not knowingly collect personal
+      data from anyone under 18. If you believe a minor has created an account, please contact us
+      and we will delete the account promptly.
+    </p>
+  </section>
+
+  <!-- ── 12. Changes ────────────────────────────────────────────────── -->
+  <section id="s12">
+    <h2>12. Changes to this policy</h2>
+    <p>
+      We may update this Privacy Policy from time to time. When we make material changes we will
+      notify you by email (using the address on your account) and update the "Last updated" date
+      at the top of this page. Your continued use of ASA Terminal after the effective date of
+      any change constitutes your acceptance of the updated policy.
+    </p>
+    <p>
+      Previous versions of this policy are available on request.
+    </p>
+  </section>
+
+  <!-- ── 13. Contact ────────────────────────────────────────────────── -->
+  <section id="s13">
+    <h2>13. Contact &amp; complaints</h2>
+    <p>
+      For any questions about this policy, to exercise your data rights, or to raise a complaint,
+      please contact us:
+    </p>
+    <div class="contact-card">
+      <p><strong>ASA Trading Systems Ltd</strong> (trading as ASA Systems)</p>
+      <p>Bristol, United Kingdom</p>
+      <p>Email: <a href="mailto:christoffermoshiri@gmail.com">christoffermoshiri@gmail.com</a></p>
+    </div>
+    <p style="margin-top: 20px;">
+      If you are not satisfied with our response, you have the right to lodge a complaint with the
+      UK's data protection supervisory authority:
+    </p>
+    <div class="contact-card">
+      <p><strong>Information Commissioner's Office (ICO)</strong></p>
+      <p>Wycliffe House, Water Lane, Wilmslow, Cheshire, SK9 5AF</p>
+      <p>Tel: <a href="tel:03031231113">0303 123 1113</a></p>
+      <p>Web: <a href="https://ico.org.uk" target="_blank" rel="noopener">ico.org.uk</a></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── Footer ───────────────────────────────────────────────────────── -->
+<footer>
+  <p style="margin-bottom: 8px;">© 2026 ASA Trading Systems Ltd · Bristol, UK</p>
+  <p>
+    <a href="/">Home</a>
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/terms">Terms of Service</a>
+  </p>
+</footer>
+
+</body>
+</html>
