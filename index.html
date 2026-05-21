@@ -315,9 +315,32 @@
     // Edge Function URL for the Stripe customer-portal session, used
     // by the My Account → Manage Subscription action.
     const STRIPE_PORTAL_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/stripe-portal`;
-    // Desktop app download lands on the landing page anchor for now —
-    // swap for the GitHub Releases URL once installers are published.
-    const DOWNLOAD_APP_URL = "https://asasystems.app#download";
+    // Desktop installer is published on GitHub Releases. The /latest
+    // redirect always lands on the most recent published release, so
+    // the link never needs touching after a version bump. The actual
+    // .exe is in the assets list on that page (the auto-updater also
+    // reads the matching latest.json from raw.githubusercontent.com).
+    const DOWNLOAD_APP_URL = "https://github.com/cjml34483/ASA-releases/releases/latest";
+
+    // Build a Stripe Payment Link URL with optional client_reference_id +
+    // prefilled_email so the stripe-webhook Edge Function can map the
+    // resulting checkout.session.completed event back to a Supabase user.
+    //
+    // If the visitor isn't signed in yet, we still return the bare URL —
+    // the webhook will then fall back to email-based matching once they
+    // sign up. The reference_id route is the precise, race-free path
+    // and the email route is the catch-net.
+    const decorateCheckoutUrl = (url, session) => {
+      if (!url || !session?.user) return url;
+      try {
+        const u = new URL(url);
+        if (session.user.id) u.searchParams.set('client_reference_id', session.user.id);
+        if (session.user.email) u.searchParams.set('prefilled_email', session.user.email);
+        return u.toString();
+      } catch (e) {
+        return url;
+      }
+    };
 
     /* ============================================================
        CountUp — animates a number from 0 → end when scrolled into
@@ -1223,6 +1246,8 @@
        Hero — full-width product screenshot with subtle float anim.
        ============================================================ */
     const Hero = () => {
+      const { session: authSession } = useAuth();
+      const heroCheckoutUrl = decorateCheckoutUrl(DEFAULT_CHECKOUT_URL, authSession);
       const openQuiz = useOpenQuiz();
       return (
         <section id="top" className="border-b border-border md:flex md:items-center md:min-h-[calc(100vh-64px)] overflow-hidden">
@@ -1277,7 +1302,7 @@
 
                 <div className="mt-6 flex flex-col sm:flex-row gap-3">
                   <a
-                    href={DEFAULT_CHECKOUT_URL}
+                    href={heroCheckoutUrl}
                     className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-bold px-7 py-3.5 rounded-xl transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto"
                   >
                     Start My Free Trial
@@ -1615,6 +1640,8 @@
        Prop Trader Mode — explicit prop firm targeting
        ============================================================ */
     const PropTraderMode = () => {
+      const { session: authSession } = useAuth();
+      const checkoutUrl = decorateCheckoutUrl(DEFAULT_CHECKOUT_URL, authSession);
       const firms = [
         "FTMO", "The5ers", "FundedNext", "MyForexFunds", "E8 Funding",
         "Funded Engineer", "Apex Trader Funding", "True Forex Funds",
@@ -1647,7 +1674,7 @@
                   </li>
                 </ul>
                 <div className="mt-9 flex flex-col sm:flex-row gap-3">
-                  <a href={DEFAULT_CHECKOUT_URL} className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3.5 rounded-md transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto">
+                  <a href={checkoutUrl} className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3.5 rounded-md transition-colors shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto">
                     Start My Free Trial
                     <ArrowRightIcon className="w-4 h-4" />
                   </a>
@@ -1841,6 +1868,8 @@
        until SL/TP arrives, then executes complete.
        ============================================================ */
     const Comparison = () => {
+      const { session: authSession } = useAuth();
+      const checkoutUrl = decorateCheckoutUrl(DEFAULT_CHECKOUT_URL, authSession);
       const openQuiz = useOpenQuiz();
       const cols = [
         { name: "ASA Systems",      sub: "May 2026",            href: null,                              isAsa: true  },
@@ -2025,7 +2054,7 @@
 
             <div className="mt-10 flex flex-col sm:flex-row gap-3">
               <a
-                href={DEFAULT_CHECKOUT_URL}
+                href={checkoutUrl}
                 className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-6 py-3 rounded-md transition-colors w-full sm:w-auto"
               >
                 Start My Free Trial
@@ -2665,12 +2694,13 @@
 
     const Pricing = () => {
       const openQuiz = useOpenQuiz();
+      const { session } = useAuth();
       const [annual, setAnnual] = useState(false);
       const startCheckout = (displayName) => {
         const tier = TIER_TO_CANONICAL[displayName] || 'pro';
         const period = annual ? 'annual' : 'monthly';
         const url = PAYMENT_LINKS[tier] && PAYMENT_LINKS[tier][period];
-        if (url) window.open(url, '_blank', 'noopener,noreferrer');
+        if (url) window.open(decorateCheckoutUrl(url, session), '_blank', 'noopener,noreferrer');
       };
       const carouselRef = useRef(null);
       const [activeIdx, setActiveIdx] = useState(0);
@@ -2943,23 +2973,52 @@
        ============================================================ */
     const FinalCTA = () => {
       const openQuiz = useOpenQuiz();
+      const { session: authSession, subscription } = useAuth();
+      const checkoutUrl = decorateCheckoutUrl(DEFAULT_CHECKOUT_URL, authSession);
+      // If the visitor already has a paid (or trialing) subscription, show
+      // the desktop installer download as the primary action — they're past
+      // the buying stage and the only thing left to do is install. Free /
+      // signed-out visitors see the trial CTA as before.
+      const hasActiveSub = subscription && ["active", "trialing", "past_due"].includes(subscription.status);
       return (
         <section id="download" className="border-b border-border bg-surface">
           <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-12 md:py-24 text-center">
             <h2 className="h2-fluid font-bold text-primary tracking-tighter2 max-w-3xl mx-auto">
-              Stop <SI>guessing</SI> which signals work.
+              {hasActiveSub ? (<>Ready to install <SI>ASA Terminal</SI>.</>) : (<>Stop <SI>guessing</SI> which signals work.</>)}
             </h2>
             <p className="mt-6 md:mt-8 text-base md:text-xl text-primary/80 max-w-2xl mx-auto leading-relaxed">
-              Start your 7-day free trial. No card required. Cancel anytime.
+              {hasActiveSub
+                ? "Download the Windows installer below. Sign in with the email and password you used at sign-up."
+                : "Start your 7-day free trial. No card required. Cancel anytime."}
             </p>
-            <div className="mt-10 md:mt-12 flex justify-center">
-              <a
-                href={DEFAULT_CHECKOUT_URL}
-                className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-8 py-4 rounded-md transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto"
-              >
-                Start My Free Trial
-                <ArrowRightIcon className="w-4 h-4" />
-              </a>
+            <div className="mt-10 md:mt-12 flex flex-col sm:flex-row justify-center items-center gap-3">
+              {hasActiveSub ? (
+                <a
+                  href={DOWNLOAD_APP_URL}
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-8 py-4 rounded-md transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto"
+                >
+                  Download for Windows
+                  <ArrowRightIcon className="w-4 h-4" />
+                </a>
+              ) : (
+                <a
+                  href={checkoutUrl}
+                  className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold px-8 py-4 rounded-md transition-colors text-base shadow-[0_8px_24px_-12px_rgba(55,170,53,0.5)] w-full sm:w-auto"
+                >
+                  Start My Free Trial
+                  <ArrowRightIcon className="w-4 h-4" />
+                </a>
+              )}
+              {hasActiveSub && (
+                <a
+                  href="https://github.com/cjml34483/ASA-releases/releases/latest"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 border border-border hover:border-primary/40 text-primary font-semibold px-6 py-4 rounded-md transition-colors w-full sm:w-auto"
+                >
+                  All releases
+                </a>
+              )}
             </div>
             <p className="mt-5 text-sm">
               <span className="text-muted">Not sure which plan? </span>
@@ -3187,6 +3246,7 @@
     };
 
     const QuizFunnel = ({ open, onClose }) => {
+      const { session: authSession } = useAuth();
       const [step, setStep]       = useState(0); // 0..4 = questions, 5 = capture, 6 = result
       const [answers, setAnswers] = useState([]);
       const [name, setName]       = useState("");
@@ -3285,7 +3345,12 @@
         // PLAN_RECOMMENDATIONS.business.id is "scale" — map to the canonical
         // "elite" key used by PAYMENT_LINKS (same Stripe product either way).
         const tier = rec.id === 'scale' ? 'elite' : rec.id;
-        return (PAYMENT_LINKS[tier] && PAYMENT_LINKS[tier].monthly) || DEFAULT_CHECKOUT_URL;
+        const base = (PAYMENT_LINKS[tier] && PAYMENT_LINKS[tier].monthly) || DEFAULT_CHECKOUT_URL;
+        // Decorate with client_reference_id + prefilled_email if the visitor
+        // is already signed in to Supabase. Falls back to bare URL otherwise
+        // (the email collected at quiz capture isn't passed — the user types
+        // their real email at Stripe Checkout, and the webhook matches by it).
+        return decorateCheckoutUrl(base, authSession);
       })();
 
       // Recap line for the results screen — turns the trader's
@@ -3579,6 +3644,8 @@
        Bottom-right popup widget
        ============================================================ */
     const SupportWidget = () => {
+      const { session: authSession } = useAuth();
+      const checkoutUrl = decorateCheckoutUrl(DEFAULT_CHECKOUT_URL, authSession);
       const [open, setOpen] = useState(false);
       const [mounted, setMounted] = useState(false);
       useEffect(() => { setMounted(true); }, []);
@@ -3621,7 +3688,7 @@
                   <span className="text-sm text-primary truncate">christoffermoshiri@gmail.com</span>
                 </a>
                 <a
-                  href={DEFAULT_CHECKOUT_URL}
+                  href={checkoutUrl}
                   className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg font-semibold text-sm px-4 py-2.5 rounded-md transition-colors"
                 >
                   Start My Free Trial
