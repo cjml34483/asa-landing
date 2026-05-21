@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Risk Disclosure &mdash; ASA Systems</title>
+  <meta name="description" content="Risk Disclosure for ASA Terminal by ASA Systems. Trading CFDs and forex carries substantial risk." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #FAFAF8;
+      --surface:   #FFFFFF;
+      --border:    rgba(17,24,39,0.08);
+      --border-strong: rgba(17,24,39,0.1);
+      --table-head:    rgba(17,24,39,0.06);
+      --accent:    #37AA35;
+      --text:      #111827;
+      --muted:     #6B7280;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: saturate(180%) blur(12px);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--text);
+      letter-spacing: -0.03em;
+    }
+
+    .logo-dot { color: var(--accent); }
+
+    .back-link {
+      font-size: 14px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--text); }
+
+    .page-wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 64px 24px 96px;
+    }
+
+    .hero {
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 14px;
+      line-height: 1.15;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .hero-meta strong { color: var(--text); font-weight: 600; }
+
+    /* Warning banner */
+    .warning-banner {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-left: 4px solid #EF4444;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 48px;
+    }
+
+    .warning-banner p {
+      color: #7F1D1D;
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 0;
+    }
+
+    section { margin-bottom: 48px; }
+
+    section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 18px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+    }
+
+    section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin: 22px 0 8px;
+    }
+
+    p { margin-bottom: 14px; color: var(--muted); }
+    p:last-child { margin-bottom: 0; }
+    p strong { color: var(--text); font-weight: 600; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ul, ol { padding-left: 22px; margin-bottom: 14px; }
+    li { color: var(--muted); margin-bottom: 6px; }
+    li strong { color: var(--text); font-weight: 600; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 20px 24px;
+    }
+
+    .stat-card .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: #EF4444;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .contact-card {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-top: 16px;
+    }
+
+    .contact-card p { color: var(--text); margin-bottom: 6px; }
+    .contact-card p:last-child { margin-bottom: 0; }
+
+    footer {
+      background: #111827;
+      color: rgba(255,255,255,0.55);
+      padding: 32px 24px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    footer p { color: rgba(255,255,255,0.55); margin-bottom: 10px; }
+    footer p:last-child { margin-bottom: 0; }
+    footer a { color: rgba(255,255,255,0.75); text-decoration: none; margin: 0 10px; }
+    footer a:hover { color: #fff; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo">ASA<span class="logo-dot">.</span>Systems</a>
+  <a href="/" class="back-link">← Back to home</a>
+</header>
+
+<main class="page-wrap">
+
+  <div class="hero">
+    <p class="hero-label">Legal</p>
+    <h1>Risk Disclosure</h1>
+    <div class="hero-meta">
+      <span>Effective date: <strong>1 January 2025</strong></span>
+      <span>Jurisdiction: <strong>United Kingdom</strong></span>
+    </div>
+  </div>
+
+  <div class="warning-banner">
+    <p>⚠️ Trading CFDs and foreign exchange carries substantial risk of loss and may not be suitable for all investors. You should only trade with money you can afford to lose.</p>
+  </div>
+
+  <section>
+    <h2>1. Key Risk Statistics</h2>
+    <p>Industry data consistently shows that the majority of retail accounts lose money when trading leveraged products.</p>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-value">74–89%</div>
+        <div class="stat-label">of retail investor accounts lose money when trading CFDs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">High</div>
+        <div class="stat-label">leverage means losses can exceed your initial deposit</div>
+      </div>
+    </div>
+
+    <p>These figures are published by FCA-regulated brokers as required by UK financial regulations. The exact percentage varies by broker and instrument.</p>
+  </section>
+
+  <section>
+    <h2>2. Nature of the Risks</h2>
+
+    <h3>Market Risk</h3>
+    <p>Prices of financial instruments can move rapidly and unpredictably. Adverse price movements can result in losses that equal or exceed your entire invested capital. Past price performance is not a reliable indicator of future results.</p>
+
+    <h3>Leverage Risk</h3>
+    <p>CFDs and forex products are leveraged instruments. Leverage amplifies both gains and losses relative to your margin deposit. A small adverse movement in the underlying market can result in a loss that significantly exceeds the amount you initially deposited.</p>
+
+    <h3>Signal and Automation Risk</h3>
+    <p>ASA Terminal automates the copying of third-party trading signals. Signal providers have their own track records, methodologies, and risk profiles. <strong>Past performance of any signal provider does not guarantee future results.</strong> You remain solely responsible for selecting which signals to follow and configuring appropriate risk parameters.</p>
+
+    <h3>Technology and Connectivity Risk</h3>
+    <p>Automated trading systems depend on reliable internet connectivity, the continued availability of MetaTrader 5, and the correct functioning of ASA Terminal software. Technical failures, connectivity interruptions, or software errors may result in missed trades, duplicate trades, or unintended positions.</p>
+
+    <h3>Liquidity Risk</h3>
+    <p>Some markets, particularly exotic currency pairs and certain CFD instruments, can become illiquid. During periods of low liquidity, spreads may widen significantly and it may not be possible to execute trades at expected prices.</p>
+
+    <h3>Counterparty and Broker Risk</h3>
+    <p>Your trades are executed through your chosen broker. You are exposed to the financial health and regulatory standing of that broker. ASA Systems has no control over, and accepts no responsibility for, the conduct of your broker.</p>
+  </section>
+
+  <section>
+    <h2>3. ASA Systems Is Not a Financial Service</h2>
+    <p>ASA Terminal is automation and analytics software. ASA Systems does not:</p>
+    <ul>
+      <li>Provide investment advice or recommendations</li>
+      <li>Manage money or client funds</li>
+      <li>Execute trades on your behalf or act as your agent</li>
+      <li>Select trading signals for you</li>
+      <li>Guarantee any trading outcome or level of performance</li>
+    </ul>
+    <p>All trading decisions, risk settings, and signal selections remain entirely your own responsibility. You should consider whether trading is appropriate for you given your financial situation and objectives.</p>
+  </section>
+
+  <section>
+    <h2>4. Past Performance</h2>
+    <p>Any performance data shown in ASA Terminal &mdash; including per-provider Sharpe ratios, win rates, R-multiples, or equity curves &mdash; reflects historical results only. <strong>Past performance is not a reliable indicator of future results.</strong> Markets are dynamic and historical patterns can change or reverse without warning.</p>
+  </section>
+
+  <section>
+    <h2>5. Seek Independent Advice</h2>
+    <p>Before trading leveraged products, you should carefully consider your investment objectives, level of experience, and risk appetite. You should seek independent financial advice from an FCA-authorised adviser if you are unsure whether trading is right for you.</p>
+    <p>If you are in the United Kingdom and wish to find a regulated financial adviser, you can use the FCA's Financial Services Register at <a href="https://register.fca.org.uk" target="_blank" rel="noopener">register.fca.org.uk</a>.</p>
+  </section>
+
+  <section>
+    <h2>6. Contact</h2>
+    <p>For questions about this disclosure:</p>
+    <div class="contact-card">
+      <p><strong>ASA Trading Systems Ltd</strong> (trading as ASA Systems)</p>
+      <p>Bristol, United Kingdom</p>
+      <p>Email: <a href="mailto:christoffermoshiri@gmail.com">christoffermoshiri@gmail.com</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>&copy; 2026 ASA Trading Systems Ltd &middot; Bristol, UK</p>
+  <p>
+    <a href="/">Home</a>
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/terms">Terms of Service</a>
+    <a href="/risk">Risk Disclosure</a>
+    <a href="/security">Security</a>
+  </p>
+</footer>
+
+</body>
+</html>

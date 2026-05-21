@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation &mdash; ASA Systems</title>
+  <meta name="description" content="ASA Terminal documentation and user guides. Coming soon." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #FAFAF8;
+      --surface:   #FFFFFF;
+      --border:    rgba(17,24,39,0.08);
+      --border-strong: rgba(17,24,39,0.1);
+      --accent:    #37AA35;
+      --text:      #111827;
+      --muted:     #6B7280;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: saturate(180%) blur(12px);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--text);
+      letter-spacing: -0.03em;
+    }
+
+    .logo-dot { color: var(--accent); }
+
+    .back-link {
+      font-size: 14px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--text); }
+
+    .page-wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 80px 24px 96px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .coming-soon-label {
+      display: inline-block;
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      color: #15803D;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 6px 16px;
+      border-radius: 999px;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      margin-bottom: 20px;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 520px;
+      margin-bottom: 48px;
+      line-height: 1.6;
+    }
+
+    .contact-cta {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      padding: 32px 40px;
+      max-width: 480px;
+      width: 100%;
+      margin-bottom: 48px;
+    }
+
+    .contact-cta h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .contact-cta p {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .email-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+
+    .email-btn:hover { opacity: 0.88; text-decoration: none; }
+
+    /* Topic cards */
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      width: 100%;
+      max-width: 660px;
+      text-align: left;
+    }
+
+    .topic-card {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+
+    .topic-card .topic-icon { font-size: 22px; margin-bottom: 10px; }
+    .topic-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .topic-card p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+
+    .docs-note {
+      margin-top: 40px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    footer {
+      background: #111827;
+      color: rgba(255,255,255,0.55);
+      padding: 32px 24px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    footer p { color: rgba(255,255,255,0.55); margin-bottom: 10px; }
+    footer p:last-child { margin-bottom: 0; }
+    footer a { color: rgba(255,255,255,0.75); text-decoration: none; margin: 0 10px; }
+    footer a:hover { color: #fff; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo">ASA<span class="logo-dot">.</span>Systems</a>
+  <a href="/" class="back-link">← Back to home</a>
+</header>
+
+<main class="page-wrap">
+
+  <span class="coming-soon-label">Documentation</span>
+
+  <h1>Docs Are<br>On The Way</h1>
+
+  <p class="subtitle">
+    Full documentation for ASA Terminal &mdash; covering installation, MT5 setup, signal channel configuration, risk settings, and trade modes &mdash; is currently being written.
+  </p>
+
+  <div class="contact-cta">
+    <h2>Need help now?</h2>
+    <p>Email us directly and we will walk you through anything you need.</p>
+    <a href="mailto:christoffermoshiri@gmail.com" class="email-btn">
+      ✉ christoffermoshiri@gmail.com
+    </a>
+  </div>
+
+  <div class="topic-grid">
+    <div class="topic-card">
+      <div class="topic-icon">⚙️</div>
+      <h3>Installation</h3>
+      <p>Getting ASA Terminal installed and running on Windows</p>
+    </div>
+    <div class="topic-card">
+      <div class="topic-icon">📡</div>
+      <h3>Signal Channels</h3>
+      <p>Connecting Telegram and Discord channels</p>
+    </div>
+    <div class="topic-card">
+      <div class="topic-icon">🔗</div>
+      <h3>MT5 Setup</h3>
+      <p>Linking your MetaTrader 5 account</p>
+    </div>
+    <div class="topic-card">
+      <div class="topic-icon">📊</div>
+      <h3>Risk Settings</h3>
+      <p>Configuring position sizing, SL/TP, and prop firm rules</p>
+    </div>
+    <div class="topic-card">
+      <div class="topic-icon">🏆</div>
+      <h3>Performance</h3>
+      <p>Understanding Sharpe ratio and R-multiple attribution</p>
+    </div>
+    <div class="topic-card">
+      <div class="topic-icon">🔒</div>
+      <h3>Stealth Mode</h3>
+      <p>Running on prop firm accounts with trade randomisation</p>
+    </div>
+  </div>
+
+  <p class="docs-note">Documentation will be published here. Check back soon, or <a href="mailto:christoffermoshiri@gmail.com">email us</a> with a specific question.</p>
+
+</main>
+
+<footer>
+  <p>&copy; 2026 ASA Trading Systems Ltd &middot; Bristol, UK</p>
+  <p>
+    <a href="/">Home</a>
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/terms">Terms of Service</a>
+    <a href="/docs">Documentation</a>
+    <a href="/status">Status</a>
+  </p>
+</footer>
+
+</body>
+</html>
