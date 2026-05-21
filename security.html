@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Security &mdash; ASA Systems</title>
-  <meta name="description" content="How ASA Systems protects your data: encryption in transit and at rest, SOC2-compliant infrastructure, and responsible disclosure." />
+  <meta name="description" content="How ASA Systems protects your data: encryption in transit and at rest, enterprise-grade infrastructure, and responsible disclosure." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -209,7 +209,7 @@
 <body>
 
 <header>
-  <a href="/" class="logo">ASA<span class="logo-dot">.</span>Systems</a>
+  <a href="/" class="logo"><img src="/asa-systems-logo-dark.png" alt="ASA Systems" style="height:32px;"></a>
   <a href="/" class="back-link">← Back to home</a>
 </header>
 
@@ -224,69 +224,53 @@
   <div class="card-grid">
     <div class="sec-card">
       <div class="sec-card-icon">🔒</div>
-      <h3>Encryption in Transit</h3>
-      <p>All data between your browser, the ASA Terminal app, and our servers is encrypted using TLS 1.2 or higher. We do not support unencrypted connections.</p>
+      <h3>Encrypted in Transit</h3>
+      <p>All communication between your devices and our services is encrypted end-to-end using modern, industry-standard protocols.</p>
     </div>
     <div class="sec-card">
       <div class="sec-card-icon">🗄️</div>
-      <h3>Encryption at Rest</h3>
-      <p>Data stored in our database is encrypted at rest using AES-256. Database backups are also encrypted.</p>
+      <h3>Encrypted at Rest</h3>
+      <p>Any data we hold on your behalf is encrypted at rest using industry-standard encryption, including all backups.</p>
     </div>
     <div class="sec-card">
       <div class="sec-card-icon">🏗️</div>
-      <h3>SOC 2 Infrastructure</h3>
-      <p>Our backend runs on Supabase, which operates on SOC 2 Type II certified infrastructure. Physical and logical access controls are audited independently.</p>
+      <h3>Enterprise-Grade Infrastructure</h3>
+      <p>We rely on enterprise-grade cloud infrastructure operated by providers with independent security certifications and regular third-party audits.</p>
     </div>
     <div class="sec-card">
       <div class="sec-card-icon">🛡️</div>
-      <h3>No MT5 Credentials on Servers</h3>
-      <p>Your MetaTrader 5 login, password, and server details never leave your machine. ASA Terminal connects to MT5 locally via the MetaTrader 5 Python bridge only.</p>
+      <h3>Credentials Stay on Your Device</h3>
+      <p>Your trading account credentials never leave your machine. ASA Terminal connects to your broker locally &mdash; we never see, transmit, or store your login details.</p>
     </div>
     <div class="sec-card">
       <div class="sec-card-icon">📊</div>
       <h3>Minimal Data Collection</h3>
-      <p>We collect only what is necessary to operate the service. Telemetry is anonymised, aggregated, and opt-in &mdash; disabled by default. No trading data or credentials leave your device.</p>
+      <p>We collect only what is necessary to operate the service. Any optional telemetry is anonymised, aggregated, and opt-in &mdash; disabled by default.</p>
     </div>
     <div class="sec-card">
       <div class="sec-card-icon">🔑</div>
-      <h3>Access Controls</h3>
-      <p>Production database access is restricted to authorised personnel only, using role-based permissions enforced at the database level via Supabase Row Level Security (RLS).</p>
+      <h3>Strict Access Controls</h3>
+      <p>Access to your data is strictly controlled, logged, and audited. Only a small number of authorised personnel can reach production systems, and only when strictly necessary.</p>
     </div>
   </div>
 
   <section>
-    <h2>What We Store</h2>
-    <p>When you create an account with ASA Systems, we store:</p>
-    <ul>
-      <li><strong>Email address</strong> — used for account authentication and important service notifications</li>
-      <li><strong>Subscription status</strong> — your current plan tier, managed via Stripe</li>
-      <li><strong>Anonymised usage telemetry</strong> — feature usage counts and error rates, only if you have opted in</li>
-    </ul>
-    <p>We do <strong>not</strong> store your MetaTrader 5 credentials, your trading history, your positions, your signal channel content, or any personally identifiable trading data.</p>
+    <h2>What Stays on Your Device</h2>
+    <p>ASA Terminal is designed to keep sensitive information local. Your trading credentials, positions, trade history, signal channel content, and any P&amp;L data remain entirely on your own machine. None of it is transmitted to or stored by ASA Systems.</p>
   </section>
 
   <section>
-    <h2>What We Do Not Store</h2>
-    <ul>
-      <li>MT5 account login, password, or server details</li>
-      <li>Telegram or Discord account tokens or session data</li>
-      <li>Signal channel messages or content</li>
-      <li>Trade history, positions, or P&amp;L data</li>
-      <li>Any financial account information</li>
-    </ul>
-    <p>All of the above remains entirely on your local machine.</p>
+    <h2>What We Hold</h2>
+    <p>To run your account we hold only the minimum required &mdash; for example, the email address you signed up with and your current subscription status. We do not collect or retain personally identifiable trading data.</p>
   </section>
 
   <section>
     <h2>Responsible Disclosure</h2>
-    <p>We take security vulnerabilities seriously. If you believe you have found a security issue in ASA Terminal or our website, please report it to us responsibly before disclosing it publicly.</p>
+    <p>We take security seriously and welcome reports from researchers acting in good faith. If you believe you have found a security issue, please get in touch with us privately before any public disclosure.</p>
 
     <div class="disclosure-box">
-      <p>Report security vulnerabilities to: <a href="mailto:christoffermoshiri@gmail.com"><strong>christoffermoshiri@gmail.com</strong></a><br>
-      Please include a description of the issue, steps to reproduce, and your contact details. We aim to respond within 48 hours and will work with you to address confirmed issues promptly.</p>
+      <p>Report security concerns to: <a href="mailto:christoffermoshiri@gmail.com"><strong>christoffermoshiri@gmail.com</strong></a></p>
     </div>
-
-    <p style="margin-top: 16px;">We ask that you give us reasonable time to investigate and remediate before any public disclosure. We will not pursue legal action against researchers who act in good faith under these guidelines.</p>
   </section>
 
   <section>
