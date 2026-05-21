@@ -322,39 +322,6 @@
     // reads the matching latest.json from raw.githubusercontent.com).
     const DOWNLOAD_APP_URL = "https://github.com/cjml34483/ASA-releases/releases/latest";
 
-    // ──────────────────────────────────────────────────────────────
-    //  Client-side routing
-    // ──────────────────────────────────────────────────────────────
-    // The site is a single index.html. Vercel's clean-URL rewrite
-    // (vercel.json) routes "/account" to this file; on first paint
-    // we read window.location.pathname and render the matching view.
-    // Hash fallback (#/account) keeps deep links working on hosts
-    // without a rewrite rule. navigateTo() centralises pushState +
-    // an in-app custom event so listeners re-render without
-    // round-tripping through popstate.
-    const ROUTE_ACCOUNT = '/account';
-    const readRoute = () => {
-      try {
-        const p = window.location.pathname || '/';
-        const h = window.location.hash || '';
-        if (p === ROUTE_ACCOUNT || h === '#/account' || h === '#account') return ROUTE_ACCOUNT;
-        return '/';
-      } catch (e) {
-        return '/';
-      }
-    };
-    const navigateTo = (path) => {
-      try {
-        if (window.location.pathname !== path) {
-          window.history.pushState({}, '', path);
-        }
-        window.dispatchEvent(new Event('asa:navigate'));
-        window.scrollTo(0, 0);
-      } catch (e) {
-        window.location.href = path;
-      }
-    };
-
     // Build a Stripe Payment Link URL with optional client_reference_id +
     // prefilled_email so the stripe-webhook Edge Function can map the
     // resulting checkout.session.completed event back to a Supabase user.
@@ -1126,18 +1093,11 @@
       return `${tier} · ${statusLabel}`;
     };
 
-    // True when the user has an active or trialing subscription —
-    // gates the "Download App" affordance so prospects without a
-    // plan don't end up downloading the installer with no licence.
-    const hasActivePlan = (subscription) =>
-      !!subscription && (subscription.status === 'active' || subscription.status === 'trialing');
-
     const MyAccountDropdown = () => {
       const { session, subscription } = useAuth();
       const [open, setOpen] = useState(false);
       const ref = useRef(null);
-      const { resetPassword, logOut, toast, busy } = useAccountActions();
-      const showDownload = hasActivePlan(subscription);
+      const { manageSubscription, resetPassword, logOut, toast, busy } = useAccountActions();
       useEffect(() => {
         const onDoc = (e) => {
           if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -1183,21 +1143,20 @@
               </div>
               <button
                 role="menuitem"
-                onClick={() => { setOpen(false); navigateTo(ROUTE_ACCOUNT); }}
-                className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-accent/5 transition-colors"
+                onClick={manageSubscription}
+                disabled={busy === 'portal'}
+                className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-accent/5 transition-colors disabled:opacity-60"
               >
-                Account Settings
+                {busy === 'portal' ? 'Opening portal…' : 'Manage Subscription'}
               </button>
-              {showDownload && (
-                <a
-                  role="menuitem"
-                  href={DOWNLOAD_APP_URL}
-                  onClick={() => setOpen(false)}
-                  className="block px-4 py-2.5 text-sm text-primary hover:bg-accent/5 transition-colors"
-                >
-                  Download App
-                </a>
-              )}
+              <a
+                role="menuitem"
+                href={DOWNLOAD_APP_URL}
+                onClick={() => setOpen(false)}
+                className="block px-4 py-2.5 text-sm text-primary hover:bg-accent/5 transition-colors"
+              >
+                Download App
+              </a>
               <button
                 role="menuitem"
                 onClick={resetPassword}
@@ -1227,10 +1186,9 @@
 
     const MyAccountMobilePanel = ({ onNavigate }) => {
       const { session, subscription } = useAuth();
-      const { resetPassword, logOut, toast, busy } = useAccountActions();
+      const { manageSubscription, resetPassword, logOut, toast, busy } = useAccountActions();
       const email = session?.user?.email || '';
       const badge = planBadge(subscription);
-      const showDownload = hasActivePlan(subscription);
       const handle = (fn) => () => { onNavigate && onNavigate(); fn(); };
       return (
         <>
@@ -1244,22 +1202,21 @@
             )}
           </div>
           <button
-            onClick={() => { onNavigate && onNavigate(); navigateTo(ROUTE_ACCOUNT); }}
+            onClick={handle(manageSubscription)}
+            disabled={busy === 'portal'}
+            className="text-center font-semibold py-3 rounded-md"
+            style={{ border: '1px solid #111827', color: '#111827', opacity: busy === 'portal' ? 0.6 : 1 }}
+          >
+            {busy === 'portal' ? 'Opening portal…' : 'Manage Subscription'}
+          </button>
+          <a
+            href={DOWNLOAD_APP_URL}
+            onClick={onNavigate}
             className="text-center font-semibold py-3 rounded-md"
             style={{ border: '1px solid #111827', color: '#111827' }}
           >
-            Account Settings
-          </button>
-          {showDownload && (
-            <a
-              href={DOWNLOAD_APP_URL}
-              onClick={onNavigate}
-              className="text-center font-semibold py-3 rounded-md"
-              style={{ border: '1px solid #111827', color: '#111827' }}
-            >
-              Download App
-            </a>
-          )}
+            Download App
+          </a>
           <button
             onClick={handle(resetPassword)}
             disabled={busy === 'reset'}
@@ -1282,465 +1239,6 @@
             </div>
           )}
         </>
-      );
-    };
-
-    /* ============================================================
-       AccountPage — full /account view shown when the route matches.
-       ============================================================
-       Sections (Linear/Stripe/Vercel style):
-         1. Profile      — email (read-only) + display name (editable)
-         2. Subscription — plan, status, trial / next-billing date,
-                            "Manage Billing" → Stripe portal (Edge Fn)
-         3. Security     — change password via sb.auth.updateUser
-         4. Account      — delete-account danger zone (mailto fallback;
-                            no backend endpoint exists yet)
-
-       Auth gate:
-         If session is null after authReady, redirect to '/' and pop
-         the LoginModal. Until authReady we render a neutral skeleton
-         so a logged-in user refreshing /account never sees the
-         "please log in" message flash.
-       ============================================================ */
-
-    const formatDate = (iso) => {
-      if (!iso) return '';
-      try {
-        const d = new Date(iso);
-        if (Number.isNaN(d.getTime())) return '';
-        return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-      } catch (e) {
-        return '';
-      }
-    };
-
-    const PLAN_LABEL = { starter: 'Starter', pro: 'Pro', elite: 'Elite' };
-    const STATUS_LABEL = {
-      active: 'Active',
-      trialing: 'Trialing',
-      past_due: 'Past due',
-      cancelling: 'Cancelling at period end',
-      cancelled: 'Cancelled',
-      expired: 'Expired',
-      trial_expired: 'Trial expired',
-    };
-
-    const AccountSection = ({ title, description, children }) => (
-      <section className="bg-surface border border-border rounded-lg overflow-hidden">
-        <div className="px-6 py-5 border-b border-border">
-          <h2 className="text-base font-semibold text-primary">{title}</h2>
-          {description && <p className="mt-1 text-sm text-muted">{description}</p>}
-        </div>
-        <div className="px-6 py-5">{children}</div>
-      </section>
-    );
-
-    const AccountField = ({ label, children }) => (
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 first:pt-0 last:pb-0">
-        <span className="text-sm text-muted">{label}</span>
-        <div className="text-sm text-primary">{children}</div>
-      </div>
-    );
-
-    const ProfileSection = () => {
-      const { session } = useAuth();
-      const user = session?.user;
-      const initialName =
-        (user?.user_metadata && (user.user_metadata.display_name || user.user_metadata.full_name || user.user_metadata.name)) || '';
-      const [name, setName] = useState(initialName);
-      const [status, setStatus] = useState('idle'); // idle | saving | saved | error
-      const [errorMsg, setErrorMsg] = useState('');
-      const dirty = name.trim() !== initialName.trim();
-
-      const save = async (e) => {
-        e.preventDefault();
-        if (!sb || !dirty) return;
-        setStatus('saving');
-        setErrorMsg('');
-        try {
-          const { error } = await sb.auth.updateUser({
-            data: { display_name: name.trim() },
-          });
-          if (error) {
-            setStatus('error');
-            setErrorMsg(error.message);
-            return;
-          }
-          setStatus('saved');
-          setTimeout(() => setStatus('idle'), 2000);
-        } catch (err) {
-          setStatus('error');
-          setErrorMsg('Could not save. Try again.');
-        }
-      };
-
-      return (
-        <AccountSection title="Profile" description="Personal details associated with your account.">
-          <div className="divide-y divide-border">
-            <AccountField label="Email">
-              <span className="text-primary/80">{user?.email || '—'}</span>
-            </AccountField>
-            <div className="pt-4">
-              <form onSubmit={save} className="flex flex-col sm:flex-row sm:items-end gap-3">
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold text-muted mb-1.5 tracking-wide uppercase">Display name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="How should we address you?"
-                    maxLength={120}
-                    className="w-full bg-bg border border-border rounded-md px-4 py-2.5 text-sm text-primary placeholder:text-muted focus:outline-none focus:border-accent/60 transition-colors"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={!dirty || status === 'saving'}
-                  className="inline-flex items-center justify-center bg-accent hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-bg font-semibold text-sm px-5 py-2.5 rounded-md transition-colors"
-                >
-                  {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : 'Save'}
-                </button>
-              </form>
-              {status === 'error' && errorMsg && <p className="mt-2 text-xs text-red-500">{errorMsg}</p>}
-            </div>
-          </div>
-        </AccountSection>
-      );
-    };
-
-    const SubscriptionSection = () => {
-      const { session, subscription, authReady } = useAuth();
-      const [portalBusy, setPortalBusy] = useState(false);
-      const [errorMsg, setErrorMsg] = useState('');
-
-      const openPortal = async () => {
-        if (!session) return;
-        setPortalBusy(true);
-        setErrorMsg('');
-        try {
-          const res = await fetch(STRIPE_PORTAL_FUNCTION_URL, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok || !data.url) {
-            setErrorMsg(data.error || 'Could not open billing portal — try again.');
-            return;
-          }
-          window.open(data.url, '_blank', 'noopener,noreferrer');
-        } catch (err) {
-          setErrorMsg('Network error opening billing portal.');
-        } finally {
-          setPortalBusy(false);
-        }
-      };
-
-      const viewPlans = () => {
-        navigateTo('/');
-        // After the home view mounts, scroll to #pricing.
-        setTimeout(() => {
-          const el = document.getElementById('pricing');
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 60);
-      };
-
-      const hasSub = !!subscription && !!subscription.plan;
-      const planName = hasSub ? (PLAN_LABEL[subscription.plan] || subscription.plan) : null;
-      const statusLabel = hasSub ? (STATUS_LABEL[subscription.status] || subscription.status) : null;
-      const trialEnd = hasSub && subscription.status === 'trialing' ? formatDate(subscription.trial_ends_at) : '';
-      const nextBilling = hasSub && (subscription.status === 'active' || subscription.status === 'cancelling')
-        ? formatDate(subscription.current_period_end) : '';
-
-      if (!authReady) {
-        return (
-          <AccountSection title="Subscription">
-            <p className="text-sm text-muted">Loading subscription…</p>
-          </AccountSection>
-        );
-      }
-
-      if (!hasSub) {
-        return (
-          <AccountSection title="Subscription" description="You don't have an active plan yet.">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <p className="text-sm text-primary/80">No active plan.</p>
-              <button
-                onClick={viewPlans}
-                className="inline-flex items-center justify-center bg-accent hover:bg-accent/90 text-bg font-semibold text-sm px-5 py-2.5 rounded-md transition-colors"
-              >
-                View plans
-              </button>
-            </div>
-          </AccountSection>
-        );
-      }
-
-      return (
-        <AccountSection title="Subscription" description="Plan, status, and billing.">
-          <div className="divide-y divide-border">
-            <AccountField label="Plan">
-              <span className="font-semibold">{planName}</span>
-            </AccountField>
-            <AccountField label="Status">
-              <span className={
-                subscription.status === 'active' || subscription.status === 'trialing'
-                  ? 'inline-flex items-center gap-1.5 text-accent font-semibold'
-                  : 'inline-flex items-center gap-1.5 text-primary/80'
-              }>
-                <span className={
-                  'inline-block w-1.5 h-1.5 rounded-full ' +
-                  ((subscription.status === 'active' || subscription.status === 'trialing') ? 'bg-accent' : 'bg-muted')
-                } />
-                {statusLabel}
-              </span>
-            </AccountField>
-            {trialEnd && (
-              <AccountField label="Trial ends">
-                <span>{trialEnd}</span>
-              </AccountField>
-            )}
-            {nextBilling && (
-              <AccountField label={subscription.status === 'cancelling' ? 'Access until' : 'Next billing date'}>
-                <span>{nextBilling}</span>
-              </AccountField>
-            )}
-          </div>
-          <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-3">
-            <button
-              onClick={openPortal}
-              disabled={portalBusy}
-              className="inline-flex items-center justify-center bg-primary hover:bg-primary/90 disabled:opacity-60 text-bg font-semibold text-sm px-5 py-2.5 rounded-md transition-colors"
-            >
-              {portalBusy ? 'Opening portal…' : 'Manage billing'}
-            </button>
-            <span className="text-xs text-muted">Opens Stripe's secure billing portal in a new tab.</span>
-          </div>
-          {errorMsg && <p className="mt-3 text-xs text-red-500">{errorMsg}</p>}
-        </AccountSection>
-      );
-    };
-
-    const SecuritySection = () => {
-      const [form, setForm] = useState({ next: '', confirm: '' });
-      const [status, setStatus] = useState('idle'); // idle | saving | saved | error
-      const [errorMsg, setErrorMsg] = useState('');
-      const update = (k) => (e) => setForm(prev => ({ ...prev, [k]: e.target.value }));
-
-      const submit = async (e) => {
-        e.preventDefault();
-        setErrorMsg('');
-        if (!sb) {
-          setStatus('error');
-          setErrorMsg('Password change is temporarily unavailable.');
-          return;
-        }
-        if (form.next.length < 8) {
-          setStatus('error');
-          setErrorMsg('New password must be at least 8 characters.');
-          return;
-        }
-        if (form.next !== form.confirm) {
-          setStatus('error');
-          setErrorMsg('Passwords do not match.');
-          return;
-        }
-        setStatus('saving');
-        try {
-          const { error } = await sb.auth.updateUser({ password: form.next });
-          if (error) {
-            setStatus('error');
-            setErrorMsg(error.message);
-            return;
-          }
-          setStatus('saved');
-          setForm({ next: '', confirm: '' });
-          setTimeout(() => setStatus('idle'), 2500);
-        } catch (err) {
-          setStatus('error');
-          setErrorMsg('Could not change password. Try again.');
-        }
-      };
-
-      return (
-        <AccountSection title="Security" description="Change the password used to sign in.">
-          <form onSubmit={submit} className="flex flex-col gap-4 max-w-md">
-            <div>
-              <label className="block text-xs font-semibold text-muted mb-1.5 tracking-wide uppercase">New password</label>
-              <input
-                required
-                type="password"
-                autoComplete="new-password"
-                value={form.next}
-                onChange={update('next')}
-                placeholder="At least 8 characters"
-                className="w-full bg-bg border border-border rounded-md px-4 py-2.5 text-sm text-primary placeholder:text-muted focus:outline-none focus:border-accent/60 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-muted mb-1.5 tracking-wide uppercase">Confirm new password</label>
-              <input
-                required
-                type="password"
-                autoComplete="new-password"
-                value={form.confirm}
-                onChange={update('confirm')}
-                placeholder="Repeat your new password"
-                className="w-full bg-bg border border-border rounded-md px-4 py-2.5 text-sm text-primary placeholder:text-muted focus:outline-none focus:border-accent/60 transition-colors"
-              />
-            </div>
-            {status === 'error' && errorMsg && <p className="text-xs text-red-500">{errorMsg}</p>}
-            {status === 'saved' && <p className="text-xs text-accent">Password updated.</p>}
-            <div>
-              <button
-                type="submit"
-                disabled={status === 'saving' || !form.next || !form.confirm}
-                className="inline-flex items-center justify-center bg-primary hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed text-bg font-semibold text-sm px-5 py-2.5 rounded-md transition-colors"
-              >
-                {status === 'saving' ? 'Saving…' : 'Update password'}
-              </button>
-            </div>
-          </form>
-        </AccountSection>
-      );
-    };
-
-    const DangerZoneSection = () => {
-      // No backend endpoint exists yet to fully delete a Supabase user
-      // + cancel their Stripe sub atomically. Keep the affordance but
-      // route to support so we never leave half-deleted state behind.
-      const [confirmOpen, setConfirmOpen] = useState(false);
-      return (
-        <section className="bg-surface border rounded-lg overflow-hidden" style={{ borderColor: '#FCA5A5' }}>
-          <div className="px-6 py-5 border-b" style={{ borderColor: '#FECACA', background: 'rgba(220,38,38,0.04)' }}>
-            <h2 className="text-base font-semibold" style={{ color: '#B91C1C' }}>Delete account</h2>
-            <p className="mt-1 text-sm text-muted">
-              Permanently delete your account and cancel any active subscription.
-              This cannot be undone.
-            </p>
-          </div>
-          <div className="px-6 py-5">
-            {!confirmOpen ? (
-              <button
-                onClick={() => setConfirmOpen(true)}
-                className="inline-flex items-center justify-center font-semibold text-sm px-5 py-2.5 rounded-md transition-colors"
-                style={{ border: '1px solid #DC2626', color: '#DC2626', background: 'transparent' }}
-              >
-                Delete account
-              </button>
-            ) : (
-              <div className="rounded-md p-4" style={{ background: 'rgba(220,38,38,0.05)', border: '1px solid #FCA5A5' }}>
-                <p className="text-sm text-primary">
-                  Account deletion needs to be processed by our team so we can cancel
-                  your Stripe subscription and remove your data correctly.
-                </p>
-                <p className="mt-2 text-sm text-primary/80">
-                  Email <a className="font-semibold underline" style={{ color: '#B91C1C' }} href="mailto:support@asasystems.app?subject=Delete%20my%20ASA%20account">support@asasystems.app</a> from
-                  the email on your account and we'll handle it within 24 hours.
-                </p>
-                <div className="mt-4 flex items-center gap-3">
-                  <a
-                    href="mailto:support@asasystems.app?subject=Delete%20my%20ASA%20account&body=Please%20delete%20my%20ASA%20account%20and%20cancel%20my%20subscription."
-                    className="inline-flex items-center justify-center font-semibold text-sm px-5 py-2.5 rounded-md transition-colors text-bg"
-                    style={{ background: '#DC2626' }}
-                  >
-                    Email support
-                  </a>
-                  <button
-                    onClick={() => setConfirmOpen(false)}
-                    className="text-sm text-muted hover:text-primary"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      );
-    };
-
-    const AccountPage = () => {
-      const { session, authReady, openLogin, signOut } = useAuth();
-
-      // Auth gate. If we've finished loading the session and there
-      // is none, bounce to home and pop the login modal. Done in an
-      // effect so the redirect doesn't happen during render.
-      React.useEffect(() => {
-        if (authReady && !session) {
-          navigateTo('/');
-          openLogin();
-        }
-      }, [authReady, session, openLogin]);
-
-      // Document title for the tab.
-      React.useEffect(() => {
-        const prev = document.title;
-        document.title = 'Account — ASA Systems';
-        return () => { document.title = prev; };
-      }, []);
-
-      if (!authReady || !session) {
-        return (
-          <div className="min-h-screen bg-bg flex items-center justify-center">
-            <p className="text-sm text-muted">Loading…</p>
-          </div>
-        );
-      }
-
-      return (
-        <div className="min-h-screen bg-bg">
-          <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-border">
-            <nav className="max-w-screen-2xl mx-auto px-5 md:px-10 h-16 flex items-center justify-between">
-              <a
-                href="/"
-                onClick={(e) => { e.preventDefault(); navigateTo('/'); }}
-                className="flex items-center"
-                aria-label="ASA Systems home"
-              >
-                <AsaWordmark className="h-7 sm:h-8 w-auto" style={{ filter: 'invert(1) hue-rotate(180deg)' }} />
-              </a>
-              <button
-                onClick={async () => { await signOut(); navigateTo('/'); }}
-                className="text-sm text-primary/80 hover:text-primary transition-colors"
-              >
-                Log out
-              </button>
-            </nav>
-          </header>
-
-          <main className="max-w-3xl mx-auto px-5 md:px-8 py-10 md:py-14">
-            <a
-              href="/"
-              onClick={(e) => { e.preventDefault(); navigateTo('/'); }}
-              className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-primary transition-colors mb-6"
-            >
-              ← Back to home
-            </a>
-            <h1 className="text-3xl md:text-4xl font-bold text-primary tracking-tightish">Account</h1>
-            <p className="mt-2 text-sm text-muted">Manage your profile, subscription, and security settings.</p>
-
-            <div className="mt-8 flex flex-col gap-6">
-              <ProfileSection />
-              <SubscriptionSection />
-              <SecuritySection />
-              <DangerZoneSection />
-            </div>
-          </main>
-
-          <footer className="border-t border-border mt-12">
-            <div className="max-w-screen-2xl mx-auto px-5 md:px-10 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-              <p className="text-xs text-muted">© ASA Systems</p>
-              <div className="flex items-center gap-4 text-xs text-muted">
-                <a href="/privacy" className="hover:text-primary transition-colors">Privacy</a>
-                <a href="/terms" className="hover:text-primary transition-colors">Terms</a>
-                <a href="mailto:support@asasystems.app" className="hover:text-primary transition-colors">Support</a>
-              </div>
-            </div>
-          </footer>
-        </div>
       );
     };
 
@@ -2857,7 +2355,6 @@
                   <h3 className="text-2xl font-bold text-primary">Set up your ASA account.</h3>
                   <p className="mt-2 text-sm text-primary/70">
                     Create a password — we'll email you a verification link.
-                    Once verified, log into the desktop app with this email and password.
                   </p>
                 </div>
                 <form onSubmit={submit} className="flex flex-col gap-4">
@@ -4238,22 +3735,6 @@
       const openLogin = () => setLoginOpen(true);
       const closeLogin = () => setLoginOpen(false);
 
-      // Current route — drives whether we render the home content or
-      // the AccountPage. Listens to popstate (back/forward), hashchange
-      // (hash-fallback links), and the in-app asa:navigate custom event.
-      const [route, setRoute] = useState(() => readRoute());
-      React.useEffect(() => {
-        const sync = () => setRoute(readRoute());
-        window.addEventListener('popstate', sync);
-        window.addEventListener('hashchange', sync);
-        window.addEventListener('asa:navigate', sync);
-        return () => {
-          window.removeEventListener('popstate', sync);
-          window.removeEventListener('hashchange', sync);
-          window.removeEventListener('asa:navigate', sync);
-        };
-      }, []);
-
       // Supabase session + subscription state — drives the Nav's
       // "Log in" / "My Account" swap and the dropdown contents.
       const [session, setSession] = useState(null);
@@ -4363,32 +3844,26 @@
               </button>
             </div>
           )}
-          {route === ROUTE_ACCOUNT ? (
-            <AccountPage />
-          ) : (
-            <>
-              <Navigation />
-              <main>
-                <Hero />
-                <StatBand />
-                <PainPoints />
-                <EveryFillTagged />
-                <ProblemSolution />
-                <HowItWorks />
-                <PropTraderMode />
-                <Features />
-                <Comparison />
-                <ThreePositive />
-                <Security />
-                <Pricing />
-                <FAQ />
-                <FinalCTA />
-              </main>
-              <Footer />
-              <StickyQuizPill />
-              <SupportWidget />
-            </>
-          )}
+          <Navigation />
+          <main>
+            <Hero />
+            <StatBand />
+            <PainPoints />
+            <EveryFillTagged />
+            <ProblemSolution />
+            <HowItWorks />
+            <PropTraderMode />
+            <Features />
+            <Comparison />
+            <ThreePositive />
+            <Security />
+            <Pricing />
+            <FAQ />
+            <FinalCTA />
+          </main>
+          <Footer />
+          <StickyQuizPill />
+          <SupportWidget />
           <QuizFunnel open={quizOpen} onClose={closeQuiz} />
           {waitlistPlan && (
             <WaitlistModal plan={waitlistPlan} onClose={() => setWaitlistPlan(null)} />
