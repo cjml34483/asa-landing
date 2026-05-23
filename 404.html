@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#05070A">
+  <title>404 · Page not found — ASA Systems</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" sizes="any">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <style>
+    :root {
+      --bg:#05070A; --accent:#37AA35; --txt:#E6EAF0;
+      --txt-dim:rgba(230,234,240,.65); --txt-ghost:rgba(230,234,240,.4);
+      --border:rgba(255,255,255,.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background-image:
+        radial-gradient(ellipse at 50% -20%, rgba(55,170,53,.12) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 120%, rgba(55,170,53,.06) 0%, transparent 60%);
+    }
+    .wrap {
+      max-width: 520px;
+      text-align: center;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      letter-spacing: .18em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 56px;
+      text-decoration: none;
+    }
+    .brand::before {
+      content: '';
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 2px;
+      box-shadow: 0 0 12px rgba(55,170,53,.6);
+    }
+    .code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(4rem, 14vw, 7rem);
+      font-weight: 700;
+      line-height: 1;
+      background: linear-gradient(135deg, #37AA35 0%, #00A8FF 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -.04em;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    p {
+      color: var(--txt-dim);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 36px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: .95rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(55,170,53,.32);
+    }
+    .meta {
+      margin-top: 48px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      color: var(--txt-ghost);
+      letter-spacing: .04em;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <a class="brand" href="/">ASA Systems</a>
+    <div class="code" aria-hidden="true">404</div>
+    <h1>Page not found.</h1>
+    <p>The page you're looking for has been moved, renamed, or never existed. Head back to the home page and pick up where you left off.</p>
+    <a class="btn" href="/">Back to home <span aria-hidden="true">→</span></a>
+    <p class="meta">Lost? Email <a href="mailto:support@asasystems.app" style="color:inherit;text-decoration:underline">support@asasystems.app</a></p>
+  </main>
+</body>
+</html>
